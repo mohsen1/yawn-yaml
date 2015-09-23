@@ -1,10 +1,7 @@
-<script src="bower_components/yaml-js/yaml.js"></script>
-<script src="bower_components/lodash/lodash.js"></script>
-
-<script>
 'use strict';
 
-const YAML = window.yaml;
+import YAML from 'yaml-js';
+import _ from 'lodash';
 
 
 const NULL_TAG  = 'tag:yaml.org,2002:null';
@@ -14,7 +11,7 @@ const FLOAT_TAG = 'tag:yaml.org,2002:float';
 const MAP_TAG   = 'tag:yaml.org,2002:map';
 const SEQ_TAG   = 'tag:yaml.org,2002:seq';
 
-class YAWN {
+export default class YAWN {
 
   constructor(str) {
     this.yaml = str;
@@ -99,21 +96,3 @@ class YAWN {
     return this.json;
   }
 }
-</script>
-
-<script id="test">
-'use strict';
-
-//         012345678  01234
-let str = '# comment\nme: 1\n\n\n #more comments';
-
-let yawn = new YAWN(str);
-
-yawn.json = {me: 2};
-
-let newYaml = yawn.yaml;
-
-
-console.log(newYaml);
-// console.log(newYaml === 'me: 2 #c');
-</script>
