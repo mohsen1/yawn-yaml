@@ -33,22 +33,7 @@ export default class YAWN {
     // -------------------------------------------------------------------------
     // check if entire json is changed
     // -------------------------------------------------------------------------
-    let newTag = null;
-    if (_.isArray(newJson)) {
-      newTag = SEQ_TAG;
-    } else if (_.isObject(newJson)) {
-      newTag = MAP_TAG;
-    } else if (_.isNull(newJson)) {
-      newTag = NULL_TAG;
-    } else if (_.isNumber(newJson)) {
-      if (newJson % 10 === 0) {
-        newTag = INT_TAG;
-      } else {
-        newTag = FLOAT_TAG;
-      }
-    } else {
-      throw new Error('Unknown type')
-    };
+    let newTag = getTag(newJson);
 
     if (ast.tag !== newTag) {
       let newYaml = YAML.dump(newJson);
@@ -95,4 +80,32 @@ export default class YAWN {
   toJSON() {
     return this.json;
   }
+}
+
+/*
+ * Determines the AST tag of a JSON object
+ *
+ * @param {any} - json
+ * @returns {boolean}
+*/
+function getTag(json) {
+  let tag = null;
+
+  if (_.isArray(json)) {
+    tag = SEQ_TAG;
+  } else if (_.isObject(json)) {
+    tag = MAP_TAG;
+  } else if (_.isNull(json)) {
+    tag = NULL_TAG;
+  } else if (_.isNumber(json)) {
+    if (json % 10 === 0) {
+      tag = INT_TAG;
+    } else {
+      tag = FLOAT_TAG;
+    }
+  } else {
+    throw new Error('Unknown type')
+  };
+
+  return tag;
 }

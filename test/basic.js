@@ -4,14 +4,95 @@ import {expect} from 'chai';
 import YAWN from '../src/index.js';
 
 describe('preserves comments and styling', ()=> {
-  it('when JSON type is changed', ()=> {
 
-    //         012345678  01234
-    let str = '# comment\nme: 1\n#more comments';
-    let yawn = new YAWN(str);
-    yawn.json = ['foo', 'bar', 'baz'];
+  describe('JSON is an object', ()=> {
 
-    expect(yawn.yaml).to.equal('# comment\n[foo, bar, baz]\n#more comments');
+    it('transformed to an array', ()=> {
 
+      let str = `
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      yawn.json = ['foo', 'bar', 'baz'];
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        [foo, bar, baz] # inline comment
+        # trailing comment`);
+    });
+
+    it('one of the values changes', ()=> {
+
+      let str = `
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      yawn.json.value = 2;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        value: 2 # inline comment
+        number: 42
+        # trailing comment`);
+    });
+
+    it('two values changes', ()=> {
+
+      let str = `
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      yawn.json.value = 2;
+      yawn.json.number = 200;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        value: 2 # inline comment
+        number: 200
+        # trailing comment`);
+    });
+
+    it('one of the values is deleted', ()=> {
+      let str = `
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      delete yawn.json.value;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        number: 42
+        # trailing comment`);
+    });
+
+    it('a new value has been added', ()=> {
+      let str = `
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      yawn.newVal = 99;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        newVal: 99
+        # trailing comment`);
+    });
   });
 });
