@@ -1,0 +1,19 @@
+{
+  "name": "yawn",
+  "version": "0.0.0",
+  "authors": [
+    "Mohsen Azimi <me@azimi.me>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "lodash": "~3.10.1",
+    "yaml-js": "~0.1.3"
+  }
+}
