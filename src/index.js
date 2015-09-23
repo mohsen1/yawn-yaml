@@ -3,13 +3,12 @@
 import YAML from 'yaml-js';
 import _ from 'lodash';
 
-
-const NULL_TAG  = 'tag:yaml.org,2002:null';
-const STR_TAG   = 'tag:yaml.org,2002:str';
-const INT_TAG   = 'tag:yaml.org,2002:int';
+const NULL_TAG = 'tag:yaml.org,2002:null';
+const STR_TAG = 'tag:yaml.org,2002:str';
+const INT_TAG = 'tag:yaml.org,2002:int';
 const FLOAT_TAG = 'tag:yaml.org,2002:float';
-const MAP_TAG   = 'tag:yaml.org,2002:map';
-const SEQ_TAG   = 'tag:yaml.org,2002:seq';
+const MAP_TAG = 'tag:yaml.org,2002:map';
+const SEQ_TAG = 'tag:yaml.org,2002:seq';
 
 export default class YAWN {
 
@@ -24,9 +23,9 @@ export default class YAWN {
   set json(newJson) {
     const ast = YAML.compose(this.yaml);
 
-    if (newJson === undefined) {
+    if (!_.isDefined(newJson)) {
       this.yaml = '';
-      return;
+      return this.json;
     }
 
 
@@ -42,32 +41,32 @@ export default class YAWN {
       this.yaml = this.yaml.substr(0, ast.start_mark.pointer) + newYaml +
         this.yaml.substring(ast.end_mark.pointer);
 
-      return;
+      return this.json;
     }
 
     // -------------------------------------------------------------------------
     // NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG
     // -------------------------------------------------------------------------
     if (_.contains([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
-
+      return this.json; // TODO
     }
 
 
     // -------------------------------------------------------------------------
     // MAP_TAG
     // -------------------------------------------------------------------------
-    if (ast.tag === MAP_TAG) {
-      _.each(ast.value, pair => {
-        let [key, val] = pair;
-        console.log(key);
-      });
-    }
+    // if (ast.tag === MAP_TAG) {
+    //   _.each(ast.value, pair => {
+    //     let [key, val] = pair;
+    //     return this.json; // TODO
+    //   });
+    // }
 
     // -------------------------------------------------------------------------
     // SEQ_TAG
     // -------------------------------------------------------------------------
     if (ast.tag === SEQ_TAG) {
-
+      return this.json; // TODO
     }
 
 
@@ -104,8 +103,8 @@ function getTag(json) {
       tag = FLOAT_TAG;
     }
   } else {
-    throw new Error('Unknown type')
-  };
+    throw new Error('Unknown type');
+  }
 
   return tag;
 }

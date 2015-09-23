@@ -11,10 +11,12 @@
   "devDependencies": {
     "babel": "^5.8.23",
     "chai": "^3.3.0",
-    "mocha": "^2.3.3"
+    "eslint": "^1.5.1",
+    "mocha": "^2.3.3",
+    "mocha-eslint": "^1.0.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --compilers js:babel/register"
   },
   "repository": {
     "type": "git",
