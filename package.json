@@ -20,7 +20,7 @@
   },
   "scripts": {
     "test": "mocha --compilers js:babel/register",
-    "browserify": "browserify src/index.js -t babelify --outfile dist/yawn.js"
+    "browserify": "browserify --debug src/index.js -t [ babelify --sourceMapRelative . ] --outfile dist/yawn.js"
   },
   "repository": {
     "type": "git",
