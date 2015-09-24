@@ -3,9 +3,9 @@
 import {expect} from 'chai';
 import YAWN from '../src/index.js';
 
-describe('preserves comments and styling', ()=> {
+describe('preserves comments and styling in objects when', ()=> {
 
-  describe('JSON is an object', ()=> {
+  describe('JSON is an object and', ()=> {
 
     it('transformed to an array', ()=> {
 
@@ -24,7 +24,7 @@ describe('preserves comments and styling', ()=> {
         # trailing comment`);
     });
 
-    it('one of the values changes', ()=> {
+    it('one of the values changes  oooo', ()=> {
 
       let str = `
         # leading comment
@@ -33,7 +33,9 @@ describe('preserves comments and styling', ()=> {
         # trailing comment`;
 
       let yawn = new YAWN(str);
-      yawn.json.value = 2;
+      let json = yawn.json;
+      json.value = 2;
+      yawn.json = json;
 
       expect(yawn.yaml).to.equal(`
         # leading comment

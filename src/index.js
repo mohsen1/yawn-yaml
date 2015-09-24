@@ -1,7 +1,9 @@
-'use strict';
+  'use strict';
 
 import YAML from 'yaml-js';
 import _ from 'lodash';
+
+import YAWNError from './error.js';
 
 const NULL_TAG = 'tag:yaml.org,2002:null';
 const STR_TAG = 'tag:yaml.org,2002:str';
@@ -10,9 +12,14 @@ const FLOAT_TAG = 'tag:yaml.org,2002:float';
 const MAP_TAG = 'tag:yaml.org,2002:map';
 const SEQ_TAG = 'tag:yaml.org,2002:seq';
 
+// export default class YAWN {
 export default class YAWN {
 
   constructor(str) {
+    if (!_.isString(str)) {
+      throw new TypeError('str should be a string');
+    }
+
     this.yaml = str;
   }
 
@@ -23,9 +30,9 @@ export default class YAWN {
   set json(newJson) {
     const ast = YAML.compose(this.yaml);
 
-    if (!_.isDefined(newJson)) {
+    if (_.isUndefined(newJson)) {
       this.yaml = '';
-      return this.json;
+      return;
     }
 
 
@@ -38,35 +45,50 @@ export default class YAWN {
       let newYaml = YAML.dump(newJson);
 
       // replace this.yaml value from start to end mark with newYaml
-      this.yaml = this.yaml.substr(0, ast.start_mark.pointer) + newYaml +
-        this.yaml.substring(ast.end_mark.pointer);
+      this.yaml = replace(ast, newYaml, this.yaml);
 
-      return this.json;
+      return;
     }
 
     // -------------------------------------------------------------------------
     // NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG
     // -------------------------------------------------------------------------
     if (_.contains([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
-      return this.json; // TODO
+      this.yaml = replace(ast, newJson, this.yaml);
+
+      return;
     }
 
 
     // -------------------------------------------------------------------------
     // MAP_TAG
     // -------------------------------------------------------------------------
-    // if (ast.tag === MAP_TAG) {
-    //   _.each(ast.value, pair => {
-    //     let [key, val] = pair;
-    //     return this.json; // TODO
-    //   });
-    // }
+    if (ast.tag === MAP_TAG) {
+      let json = this.json;
+
+      _.each(ast.value, pair => {
+        let [keyNode, valNode] = pair;
+
+        // node is deleted
+        if (_.isUndefined(json[keyNode.value])) {
+          return; // TODO: delete node
+        }
+
+        let value = json[keyNode.value];
+        let newValue = newJson[keyNode.value];
+
+        // TODO: This is for only primitive value
+        if (newValue !== value) {
+          this.yaml = replace(valNode, newValue, this.yaml);
+        }
+      });
+    }
 
     // -------------------------------------------------------------------------
     // SEQ_TAG
     // -------------------------------------------------------------------------
     if (ast.tag === SEQ_TAG) {
-      return this.json; // TODO
+      return; // TODO
     }
 
 
@@ -86,6 +108,7 @@ export default class YAWN {
  *
  * @param {any} - json
  * @returns {boolean}
+ * @throws {YAWNError} - if json has weird type
 */
 function getTag(json) {
   let tag = null;
@@ -102,9 +125,25 @@ function getTag(json) {
     } else {
       tag = FLOAT_TAG;
     }
+  } else if (_.isString(json)) {
+    tag = STR_TAG;
   } else {
-    throw new Error('Unknown type');
+    throw new YAWNError('Unknown type');
   }
-
   return tag;
+}
+
+/*
+ * Place value in node range in yaml string
+ *
+ * @param node {ScalarNode}
+ * @param value {any}
+ * @param yaml {string}
+ *
+ * @returns {string}
+*/
+function replace(node, value, yaml) {
+  return yaml.substr(0, node.start_mark.pointer) +
+    String(value) +
+    yaml.substring(node.end_mark.pointer);
 }
