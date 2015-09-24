@@ -2,7 +2,18 @@
 
 import {compose} from 'yaml-js';
 import {load, dump} from 'js-yaml';
-import _ from 'lodash';
+import {
+  isArray,
+  isString,
+  isObject,
+  isUndefined,
+  isNull,
+  isNumber,
+  repeat,
+  each,
+  contains,
+  last
+} from 'lodash';
 
 import YAWNError from './error.js';
 
@@ -20,7 +31,7 @@ const SPACE = ' ';
 export default class YAWN {
 
   constructor(str) {
-    if (!_.isString(str)) {
+    if (!isString(str)) {
       throw new TypeError('str should be a string');
     }
 
@@ -34,11 +45,10 @@ export default class YAWN {
   set json(newJson) {
     const ast = compose(this.yaml);
 
-    if (_.isUndefined(newJson)) {
+    if (isUndefined(newJson)) {
       this.yaml = '';
       return;
     }
-
 
     // -------------------------------------------------------------------------
     // check if entire json is changed
@@ -46,11 +56,11 @@ export default class YAWN {
     let newTag = getTag(newJson);
 
     if (ast.tag !== newTag) {
-      let newYaml = dump(newJson);
+      let newYaml = dump(newJson).replace(/\n$/, '');
 
       // replace this.yaml value from start to end mark with newYaml if node is
       // primitive
-      if (!_.isArray(ast.value)) {
+      if (!isObject(newJson)) {
         this.yaml = replacePrimitive(ast, newYaml, this.yaml);
 
       // if node is not primitive
@@ -64,7 +74,7 @@ export default class YAWN {
     // -------------------------------------------------------------------------
     // NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG
     // -------------------------------------------------------------------------
-    if (_.contains([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
+    if (contains([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
       this.yaml = replacePrimitive(ast, newJson, this.yaml);
 
       return;
@@ -77,11 +87,11 @@ export default class YAWN {
     if (ast.tag === MAP_TAG) {
       let json = this.json;
 
-      _.each(ast.value, pair => {
+      each(ast.value, pair => {
         let [keyNode, valNode] = pair;
 
         // node is deleted
-        if (_.isUndefined(newJson[keyNode.value])) {
+        if (isUndefined(newJson[keyNode.value])) {
           this.yaml = this.yaml.substr(0, keyNode.start_mark.pointer) +
             this.yaml.substring(valNode.end_mark.pointer);
           return;
@@ -91,16 +101,16 @@ export default class YAWN {
         let newValue = newJson[keyNode.value];
 
         // only primitive value
-        if (newValue !== value && !_.isArray(valNode.value)) {
+        if (newValue !== value && !isArray(valNode.value)) {
           this.yaml = replacePrimitive(valNode, newValue, this.yaml);
         }
       });
 
       // look for new items to add
-      _.each(newJson, (value, key)=> {
+      each(newJson, (value, key)=> {
 
         // item is new
-        if (_.isUndefined(this.json[key])) {
+        if (isUndefined(this.json[key])) {
           this.yaml = insertAfterNode(ast, dump({[key]: value}), this.yaml);
         }
       });
@@ -135,19 +145,19 @@ export default class YAWN {
 function getTag(json) {
   let tag = null;
 
-  if (_.isArray(json)) {
+  if (isArray(json)) {
     tag = SEQ_TAG;
-  } else if (_.isObject(json)) {
+  } else if (isObject(json)) {
     tag = MAP_TAG;
-  } else if (_.isNull(json)) {
+  } else if (isNull(json)) {
     tag = NULL_TAG;
-  } else if (_.isNumber(json)) {
+  } else if (isNumber(json)) {
     if (json % 10 === 0) {
       tag = INT_TAG;
     } else {
       tag = FLOAT_TAG;
     }
-  } else if (_.isString(json)) {
+  } else if (isString(json)) {
     tag = STR_TAG;
   } else {
     throw new YAWNError('Unknown type');
@@ -214,11 +224,11 @@ function insertAfterNode(node, value, yaml) {
  * @retusns {Mark}
 */
 function getNodeEndMark(ast) {
-  if (_.isArray(ast.value)) {
-    let lastItem = _.last(ast.value);
+  if (isArray(ast.value)) {
+    let lastItem = last(ast.value);
 
-    if (_.isArray(lastItem)) {
-      return getNodeEndMark(_.last(lastItem));
+    if (isArray(lastItem)) {
+      return getNodeEndMark(last(lastItem));
     }
     return getNodeEndMark(lastItem);
   }
@@ -238,6 +248,6 @@ function indent(str, depth) {
   return str
     .split(LINE_SEPERATOR)
     .filter(line => !!line)
-    .map(line => _.repeat(SPACE, depth) + line)
+    .map(line => repeat(SPACE, depth) + line)
     .join(LINE_SEPERATOR);
 }

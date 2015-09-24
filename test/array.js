@@ -6,7 +6,7 @@ import YAWN from '../src/index.js';
 describe('preserves comments and styling when', ()=> {
 
   describe('JSON is an array and', ()=> {
-
+    // debugger
     it('transformed to an object', ()=> {
       let str = `
         # leading comment

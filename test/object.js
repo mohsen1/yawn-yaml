@@ -8,7 +8,7 @@ describe('preserves comments and styling in objects when', ()=> {
   describe('JSON is an object and', ()=> {
 
     it('transformed to an array', ()=> {
-
+      // debugger
       let str = `
         # leading comment
         value: 1 # inline comment
