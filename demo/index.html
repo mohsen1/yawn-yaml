@@ -30,7 +30,7 @@
       .col output {
         display: block;
         width: 100%;
-        border: 1px solid black;
+        border: 1px solid #e3e3e3;
         margin: 0;
         font-family: monospace;
         font-size: 14px;
@@ -104,10 +104,16 @@
       var yawn = new YAWN(source.value);
 
       document.getElementById('toJson').addEventListener('click', function (event) {
+        yawn = new YAWN(source.value);
         json.value = JSON.stringify(yawn.json, null, 2);
+        dest.value = '';
       });
       document.getElementById('toYaml').addEventListener('click', function (event) {
-        yawn.json = JSON.parse(json.value);
+        try {
+          yawn.json = JSON.parse(json.value);
+        } catch (error) {
+          return alert('Error parsing JSON\n' + String(error));
+        }
         dest.value = yawn.yaml;
       });
     </script>
