@@ -20,11 +20,13 @@ describe('preserves comments and styling in objects when', ()=> {
 
       expect(yawn.yaml).to.equal(`
         # leading comment
-        [foo, bar, baz] # inline comment
+        - foo
+        - bar
+        - baz
         # trailing comment`);
     });
 
-    it('one of the values changes  oooo', ()=> {
+    it('one of the values changes', ()=> {
 
       let str = `
         # leading comment
@@ -53,8 +55,10 @@ describe('preserves comments and styling in objects when', ()=> {
         # trailing comment`;
 
       let yawn = new YAWN(str);
-      yawn.json.value = 2;
-      yawn.json.number = 200;
+      let json = yawn.json;
+      json.value = 2;
+      json.number = 200;
+      yawn.json = json;
 
       expect(yawn.yaml).to.equal(`
         # leading comment
@@ -71,10 +75,13 @@ describe('preserves comments and styling in objects when', ()=> {
         # trailing comment`;
 
       let yawn = new YAWN(str);
-      delete yawn.json.value;
+      let json = yawn.json;
+      delete json.value;
+      yawn.json = json;
 
       expect(yawn.yaml).to.equal(`
         # leading comment
+         # inline comment
         number: 42
         # trailing comment`);
     });
@@ -87,7 +94,9 @@ describe('preserves comments and styling in objects when', ()=> {
         # trailing comment`;
 
       let yawn = new YAWN(str);
-      yawn.newVal = 99;
+      let json = yawn.json;
+      json.newVal = 99;
+      yawn.json = json;
 
       expect(yawn.yaml).to.equal(`
         # leading comment

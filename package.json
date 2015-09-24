@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "chai": "^3.3.0",
+    "js-yaml": "^3.4.2",
     "lodash": "^3.10.1",
     "yaml-js": "^0.1.3"
   },
