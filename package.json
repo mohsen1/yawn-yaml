@@ -11,13 +11,16 @@
   },
   "devDependencies": {
     "babel": "^5.8.23",
+    "babelify": "^6.3.0",
+    "browserify": "^11.2.0",
     "chai": "^3.3.0",
     "eslint": "^1.5.1",
     "mocha": "^2.3.3",
     "mocha-eslint": "^1.0.0"
   },
   "scripts": {
-    "test": "mocha --compilers js:babel/register"
+    "test": "mocha --compilers js:babel/register",
+    "browserify": "browserify src/index.js -t babelify --outfile dist/yawn.js"
   },
   "repository": {
     "type": "git",

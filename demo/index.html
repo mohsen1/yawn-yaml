@@ -1,0 +1,105 @@
+<html>
+  <head>
+    <title>YAWN Demo</title>
+    <script src="../dist/yawn.js"></script>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        font-family: sans-serif;
+      }
+      header {
+        padding: .3em 1em;
+      }
+      .wrapper {
+        display: flex;
+        flex: 1;
+      }
+      .wrapper > div {
+        padding: 10px;
+        justify-content: center
+      }
+      .col {
+        display: flex;
+        flex: 5;
+      }
+      .col textarea,
+      .col output {
+        display: block;
+        width: 100%;
+        border: 1px solid black;
+        margin: 0;
+        font-family: monospace;
+        font-size: 14px;
+        white-space: pre;
+      }
+      .convert {
+        display: flex;
+        flex: 1;
+        align-items: center;
+      }
+      .convert button {
+
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h2>YAWN Demo</h2>
+      <p>YAWN allow you edit YAML in JavaScript and put it back to YAML <b>without</b> losing comments and styling</p>
+    </header>
+    <div class="wrapper">
+      <div class="col">
+        <textarea id="source"></textarea>
+      </div>
+      <div class="convert">
+        <button id="toJson">to JSON =></button>
+      </div>
+      <div class="col">
+        <textarea id="json"></textarea>
+      </div>
+      <div class="convert">
+        <button id="toYaml">Back to YAML =></button>
+      </div>
+      <div class="col">
+        <output id="dest"></output>
+      </div>
+    </div>
+
+    <script>
+      'use strict';
+
+      var defaultYaml = [
+        '# this is a YAML document',
+        '# comment lines start with "#"',
+        '# this document is a map:',
+        'value: 1 # inline comment',
+        'map:',
+        '  key: value # another inline comment',
+        'array:',
+        '  - item1',
+        '  - item2',
+        '# trailing comment'
+      ].join('\n');
+
+      var source = document.getElementById('source');
+      var json = document.getElementById('json');
+      var dest = document.getElementById('dest');
+
+      source.value = defaultYaml;
+
+      var yawn = new YAWN(source.value);
+
+      document.getElementById('toJson').addEventListener('click', function (event) {
+        json.value = JSON.stringify(yawn.json, null, 2);
+      });
+      document.getElementById('toYaml').addEventListener('click', function (event) {
+        yawn.json = JSON.parse(json.value);
+        dest.value = yawn.yaml;
+      });
+    </script>
+  </body>
+</html>

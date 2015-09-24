@@ -251,3 +251,9 @@ function indent(str, depth) {
     .map(line => repeat(SPACE, depth) + line)
     .join(LINE_SEPERATOR);
 }
+
+
+// TODO: fix UMD exports...
+if (typeof window !== 'undefined') {
+  window.YAWN = YAWN;
+}
