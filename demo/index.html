@@ -35,6 +35,8 @@
         font-family: monospace;
         font-size: 14px;
         white-space: pre;
+        padding: 5px;
+        overflow: auto;
       }
       .convert {
         display: flex;
@@ -42,7 +44,15 @@
         align-items: center;
       }
       .convert button {
-
+        background-image: url('./arrow.svg');
+        background-color: transparent;
+        border: none;
+        background-size: cover;
+        background-position: center center;
+        height: 59px;
+        color: white;
+        width: 81px;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -56,13 +66,13 @@
         <textarea id="source"></textarea>
       </div>
       <div class="convert">
-        <button id="toJson">to JSON =></button>
+        <button id="toJson">toJSON</button>
       </div>
       <div class="col">
         <textarea id="json"></textarea>
       </div>
       <div class="convert">
-        <button id="toYaml">Back to YAML =></button>
+        <button id="toYaml">toYAML</button>
       </div>
       <div class="col">
         <output id="dest"></output>
