@@ -9,6 +9,7 @@
         height: 100%;
         padding: 0;
         margin: 0;
+        overflow: hidden;
         font-family: sans-serif;
       }
       header {
@@ -54,6 +55,16 @@
         width: 81px;
         cursor: pointer;
       }
+
+      textarea:focus {
+        outline: 3px solid rgba(41, 154, 226, 0.5);
+        box-shadow: 0 0 5px #00FFF4;
+      }
+      button:focus {
+        background-image: url('./arrow-selected.svg');
+        outline: none;
+        box-shadow: none;
+      }
     </style>
   </head>
   <body>
@@ -85,13 +96,23 @@
       var defaultYaml = [
         '# this is a YAML document',
         '# comment lines start with "#"',
-        '# this document is a map:',
+        '# this document is a map',
+        '',
+        '',
+        '# a simple key/value pair',
         'value: 1 # inline comment',
+        '',
+        '',
+        '# a map',
         'map:',
         '  key: value # another inline comment',
+        '',
+        '',
+        '# an array',
         'array:',
         '  - item1',
         '  - item2',
+        '',
         '# trailing comment'
       ].join('\n');
 
