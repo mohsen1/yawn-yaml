@@ -39,7 +39,7 @@ describe('preserves comments and styling when', ()=> {
     });
   });
 
-  describe('JSON is an float and', ()=> {
+  describe('JSON is a float and', ()=> {
 
     it('number changes', ()=> {
       let str = `
