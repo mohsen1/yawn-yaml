@@ -43,8 +43,30 @@ describe('preserves comments and styling in objects when', ()=> {
       expect(yawn.yaml).to.equal(`
         # leading comment
         obj:
-          val: 1 # inline comment
-          newVal: 2
+          val: 1
+          newVal: 2 # inline comment
+        # trailing comment`);
+    });
+
+    it('a primitive value is changed in third level', ()=> {
+
+      let str = `
+        # leading comment
+        obj:
+          deep: # inline_comment
+            val: 1 # inline comment
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.obj.deep.val = 2;
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        obj:
+          deep: # inline_comment
+            val: 2 # inline comment
         # trailing comment`);
     });
   });

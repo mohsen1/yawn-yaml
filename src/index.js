@@ -96,39 +96,7 @@ export default class YAWN {
     if (ast.tag === MAP_TAG) {
       let json = this.json;
 
-      each(ast.value, pair => {
-        let [keyNode, valNode] = pair;
-
-        // node is deleted
-        if (isUndefined(newJson[keyNode.value])) {
-          this.yaml = this.yaml.substr(0, keyNode.start_mark.pointer) +
-            this.yaml.substring(getNodeEndMark(valNode).pointer);
-          return;
-        }
-
-        let value = json[keyNode.value];
-        let newValue = newJson[keyNode.value];
-
-        // only primitive value
-        if (newValue !== value && !isArray(valNode.value)) {
-          this.yaml = replacePrimitive(valNode, newValue, this.yaml);
-        }
-      });
-
-      // look for new items to add
-      each(newJson, (value, key)=> {
-
-        // item is new
-        if (isUndefined(this.json[key])) {
-          let newValue = cleanDump({[key]: value});
-          this.yaml = insertAfterNode(ast, newValue, this.yaml);
-        }
-
-        // item value has changed
-        if (!isEqual(this.json[key], newJson[key])) {
-          // TODO: recurse
-        }
-      });
+      this.yaml = updateMap(ast, newJson, json, this.yaml);
     }
 
     // -------------------------------------------------------------------------
@@ -194,6 +162,68 @@ function getTag(json) {
     throw new YAWNError('Unknown type');
   }
   return tag;
+}
+
+/*
+ * update a map structure with new values
+ *
+ * @param {any} - json
+ * @returns {boolean}
+ * @throws {YAWNError} - if json has weird type
+*/
+function updateMap(ast, newJson, json, yaml) {
+
+  // look for changes
+  each(ast.value, pair => {
+    let [keyNode, valNode] = pair;
+
+    // node is deleted
+    if (isUndefined(newJson[keyNode.value])) {
+
+      // TODO: can we use of the methods below?
+      yaml = yaml.substr(0, keyNode.start_mark.pointer) +
+        yaml.substring(getNodeEndMark(valNode).pointer);
+      return;
+    }
+
+    let value = json[keyNode.value];
+    let newValue = newJson[keyNode.value];
+
+    // primitive value has changed
+    if (newValue !== value && !isArray(valNode.value)) {
+
+      // replace the value node
+      yaml = replacePrimitive(valNode, newValue, yaml);
+
+      // remove the key/value from newJson so it's not detected as new pair in
+      // later code
+      delete newJson[keyNode.value];
+    }
+
+    // non primitive value had changed
+    if (!isEqual(newValue, value) && isArray(valNode.value)) {
+
+      // recurse
+      yaml = updateMap(valNode, newValue, valNode.value, yaml);
+
+      // remove the key/value from newJson so it's not detected as new pair in
+      // later code
+      delete newJson[keyNode.value];
+    }
+  });
+
+  // look for new items to add
+  each(newJson, (value, key)=> {
+
+    // item is new
+    if (isUndefined(json[key])) {
+      let newValue = cleanDump({[key]: value});
+
+      yaml = insertAfterNode(ast, newValue, yaml);
+    }
+  });
+
+  return yaml;
 }
 
 /*
