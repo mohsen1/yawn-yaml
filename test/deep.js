@@ -69,5 +69,29 @@ describe('preserves comments and styling in objects when', ()=> {
             val: 2 # inline comment
         # trailing comment`);
     });
+
+    it('a non-primitive key/value is inserted in third level', ()=> {
+
+      let str = `
+        # leading comment
+        obj:
+          deep: # inline_comment
+            val: 1 # inline comment
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.obj.deep.newVal = {val: 43};
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        obj:
+          deep: # inline_comment
+            val: 1
+            newVal:
+              val: 43 # inline comment
+        # trailing comment`);
+    });
   });
 });

@@ -86,7 +86,7 @@ describe('preserves comments and styling in objects when', ()=> {
         # trailing comment`);
     });
 
-    it('a new value has been added', ()=> {
+    it('a new primitive value has been added', ()=> {
       let str = `
         # leading comment
         value: 1 # inline comment
@@ -103,6 +103,28 @@ describe('preserves comments and styling in objects when', ()=> {
         value: 1 # inline comment
         number: 42
         newVal: 99
+        # trailing comment`);
+    });
+
+    it('a new non-primitive value has been added', ()=> {
+      let str = `
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.newVal = {ans: 42, cond: 'good'};
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        value: 1 # inline comment
+        number: 42
+        newVal:
+          ans: 42
+          cond: good
         # trailing comment`);
     });
   });
