@@ -14,7 +14,7 @@ value: 1 # the value is here!
 
 let yawn = new YAWN(str);
 
-yawn.json.value = 2;
+yawn.json = {value: 2};
 
 console.log(yawn.yaml); // =>
 

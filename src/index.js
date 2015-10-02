@@ -9,10 +9,12 @@ import {
   isUndefined,
   isNull,
   isNumber,
+  isEqual,
   repeat,
   each,
   contains,
-  last
+  last,
+  difference
 } from 'lodash';
 
 import YAWNError from './error.js';
@@ -26,6 +28,7 @@ const SEQ_TAG = 'tag:yaml.org,2002:seq';
 
 const LINE_SEPERATOR = '\n';
 const SPACE = ' ';
+const DASH = '-';
 
 // export default class YAWN {
 export default class YAWN {
@@ -43,6 +46,12 @@ export default class YAWN {
   }
 
   set json(newJson) {
+
+    // if json is not changed do nothing
+    if (isEqual(this.json, newJson)) {
+      return;
+    }
+
     const ast = compose(this.yaml);
 
     if (isUndefined(newJson)) {
@@ -56,7 +65,7 @@ export default class YAWN {
     let newTag = getTag(newJson);
 
     if (ast.tag !== newTag) {
-      let newYaml = dump(newJson).replace(/\n$/, '');
+      let newYaml = cleanDump(newJson);
 
       // replace this.yaml value from start to end mark with newYaml if node is
       // primitive
@@ -93,7 +102,7 @@ export default class YAWN {
         // node is deleted
         if (isUndefined(newJson[keyNode.value])) {
           this.yaml = this.yaml.substr(0, keyNode.start_mark.pointer) +
-            this.yaml.substring(valNode.end_mark.pointer);
+            this.yaml.substring(getNodeEndMark(valNode).pointer);
           return;
         }
 
@@ -111,7 +120,8 @@ export default class YAWN {
 
         // item is new
         if (isUndefined(this.json[key])) {
-          this.yaml = insertAfterNode(ast, dump({[key]: value}), this.yaml);
+          let newValue = cleanDump({[key]: value});
+          this.yaml = insertAfterNode(ast, newValue, this.yaml);
         }
       });
     }
@@ -120,10 +130,48 @@ export default class YAWN {
     // SEQ_TAG
     // -------------------------------------------------------------------------
     if (ast.tag === SEQ_TAG) {
-      return; // TODO
+      let values = ast.value.map(item => item.value);
+
+      // new items in newJson
+      difference(newJson, values).forEach((newItem)=> {
+        this.yaml = insertAfterNode(ast, cleanDump([newItem]), this.yaml);
+      });
+
+      // deleted items in newJson
+      difference(values, newJson).forEach((deletedItem)=> {
+
+        // find the node for this item
+        each(ast.value, node => {
+          if (isEqual(node.value, deletedItem)) {
+
+            // remove it from yaml
+            this.yaml = removeArrayElement(ast, node, this.yaml);
+          }
+        });
+      });
     }
 
+      // each(ast.value, (itemNode)=> {
 
+      //   // primitive value
+      //   if (!isObject(itemNode.value)) {
+
+      //     // value is new
+      //     if (!contains(newJson, itemNode.value)) {
+      //       this.yaml = replacePrimitive(itemNode, '', this.yaml);
+      //     }
+      //   }
+      // });
+
+      // each(newJson, (item)=> {
+
+      //   if (!isObject(item)) {
+      //     if (!contains(values, item)) {
+
+      //     }
+
+      //   }
+      // });
   }
 
   toString() {
@@ -217,6 +265,30 @@ function insertAfterNode(node, value, yaml) {
 }
 
 /*
+ * Removes an element from array
+ *
+ * @param {AST} ast
+ * @param {Node} element
+ * @param {string} yaml
+ *
+ * @returns {string}
+*/
+function removeArrayElement(ast, element, yaml) {
+
+  // FIXME: Removing element from a YAML like `[a,b]` won't work with this.
+
+  // find index of DASH(`-`) character for this array
+  let index = element.start_mark.pointer;
+  while(index > 0 && yaml[index] != DASH) {
+    index--;
+  }
+
+  return yaml.substr(0, index) +
+    yaml.substring(element.end_mark.pointer);
+}
+
+
+/*
  * Gets end mark of an AST
  *
  * @param {Node} ast
@@ -247,11 +319,14 @@ function getNodeEndMark(ast) {
 function indent(str, depth) {
   return str
     .split(LINE_SEPERATOR)
-    .filter(line => !!line)
+    .filter(line => line)
     .map(line => repeat(SPACE, depth) + line)
     .join(LINE_SEPERATOR);
 }
 
+function cleanDump(value) {
+  return dump(value).replace(/\n$/, '');
+}
 
 // TODO: fix UMD exports...
 if (typeof window !== 'undefined') {

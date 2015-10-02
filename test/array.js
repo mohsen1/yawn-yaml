@@ -23,5 +23,83 @@ describe('preserves comments and styling when', ()=> {
         val2: 2
         # trailing comment`);
     });
+
+    it('one item in array is changed', ()=> {
+      let str = `
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json[0] = 'value0';
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        - value2
+        - value0
+        # trailing comment`);
+    });
+
+    it('two items in array are changed', ()=> {
+      let str = `
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json[0] = 'value0';
+      json[1] = 'value1';
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        - value0 # inline comment
+        - value1
+        # trailing comment`);
+    });
+
+    it('one item is deleted', ()=> {
+      let str = `
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.shift();
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+         # inline comment
+        - value2
+        # trailing comment`);
+    });
+
+    it('one item is added', ()=> {
+      let str = `
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.push('value3');
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        - value1 # inline comment
+        - value2
+        - value3
+        # trailing comment`);
+    });
   });
 });
