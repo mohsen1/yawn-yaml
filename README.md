@@ -1,6 +1,10 @@
 # YAWN YAML
 
+[![Build Status](https://travis-ci.org/mohsen1/yawn-yaml.svg)](https://travis-ci.org/mohsen1/yawn-yaml)
+
 > YAML parser that preserves comments and styling
+
+**[Live Demo](http://azimi.me/yawn-yaml/demo/index.html)**
 
 ## Usage
 

@@ -14,6 +14,8 @@
       }
       header {
         padding: .3em 1em;
+        display: flex;
+        justify-content: space-between;
       }
       .wrapper {
         display: flex;
@@ -69,8 +71,14 @@
   </head>
   <body>
     <header>
-      <h2>YAWN Demo</h2>
-      <p>YAWN allow you edit YAML in JavaScript and put it back to YAML <b>without</b> losing comments and styling</p>
+      <div class="left">
+        <h2>YAWN Demo</h2>
+        <p>YAWN allow you edit YAML in JavaScript and put it back to YAML <b>without</b> losing comments and styling</p>
+      </div>
+      <div class="right">
+        <p><b><a href="https://github.com/mohsen1/yawn-yaml">Code in GitHub</a></b></p>
+        <iframe src="https://ghbtns.com/github-btn.html?user=mohsen1&repo=yawn-yaml&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
+      </div>
     </header>
     <div class="wrapper">
       <div class="col">
