@@ -123,6 +123,11 @@ export default class YAWN {
           let newValue = cleanDump({[key]: value});
           this.yaml = insertAfterNode(ast, newValue, this.yaml);
         }
+
+        // item value has changed
+        if (!isEqual(this.json[key], newJson[key])) {
+          // TODO: recurse
+        }
       });
     }
 
@@ -150,28 +155,6 @@ export default class YAWN {
         });
       });
     }
-
-      // each(ast.value, (itemNode)=> {
-
-      //   // primitive value
-      //   if (!isObject(itemNode.value)) {
-
-      //     // value is new
-      //     if (!contains(newJson, itemNode.value)) {
-      //       this.yaml = replacePrimitive(itemNode, '', this.yaml);
-      //     }
-      //   }
-      // });
-
-      // each(newJson, (item)=> {
-
-      //   if (!isObject(item)) {
-      //     if (!contains(values, item)) {
-
-      //     }
-
-      //   }
-      // });
   }
 
   toString() {
