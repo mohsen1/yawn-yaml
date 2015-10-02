@@ -38,6 +38,7 @@ describe('preserves comments and styling when', ()=> {
 
       expect(yawn.yaml).to.equal(`
         # leading comment
+         # inline comment
         - value2
         - value0
         # trailing comment`);
@@ -53,13 +54,14 @@ describe('preserves comments and styling when', ()=> {
       let yawn = new YAWN(str);
       let json = yawn.json;
       json[0] = 'value0';
-      json[1] = 'value1';
+      json[1] = 'value3';
       yawn.json = json;
 
       expect(yawn.yaml).to.equal(`
         # leading comment
-        - value0 # inline comment
-        - value1
+         # inline comment
+        - value3
+        - value0
         # trailing comment`);
     });
 
