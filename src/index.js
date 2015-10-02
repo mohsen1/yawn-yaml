@@ -279,7 +279,7 @@ function removeArrayElement(ast, element, yaml) {
 
   // find index of DASH(`-`) character for this array
   let index = element.start_mark.pointer;
-  while(index > 0 && yaml[index] != DASH) {
+  while (index > 0 && yaml[index] !== DASH) {
     index--;
   }
 
