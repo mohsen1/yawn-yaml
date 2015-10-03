@@ -9,7 +9,7 @@
 ## Usage
 
 ```js
-import YAWN from 'ywan';
+import YAWN from 'ywan-yaml';
 
 let str = `
 # my comment
