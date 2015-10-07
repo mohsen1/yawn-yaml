@@ -2,7 +2,7 @@
   "name": "yawn-yaml",
   "version": "1.0.1",
   "description": "YAML parser that preserves comments and styling",
-  "main": "index.js",
+  "main": "dist/yawn.js",
   "dependencies": {
     "js-yaml": "^3.4.2",
     "lodash": "^3.10.1",

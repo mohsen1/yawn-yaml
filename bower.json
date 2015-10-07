@@ -4,6 +4,7 @@
   "authors": [
     "Mohsen Azimi <me@azimi.me>"
   ],
+  "main": "dist/yawn.js",
   "license": "MIT",
   "ignore": [
     "**/.*",
