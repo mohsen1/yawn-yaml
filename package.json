@@ -1,6 +1,6 @@
 {
   "name": "yawn-yaml",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "YAML parser that preserves comments and styling",
   "main": "dist/yawn.js",
   "dependencies": {
@@ -14,7 +14,6 @@
     "babelify": "^6.3.0",
     "browserify": "^11.2.0",
     "browserify-global-shim": "^1.0.0",
-    "chai": "^3.3.0",
     "eslint": "^1.5.1",
     "mocha": "^2.3.3",
     "mocha-eslint": "^1.0.0"
@@ -25,7 +24,7 @@
   },
   "browserify": {
     "transform": [
-        "browserify-global-shim"
+      "browserify-global-shim"
     ]
   },
   "browserify-global-shim": {
