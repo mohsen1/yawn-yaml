@@ -204,7 +204,7 @@ function updateMap(ast, newJson, json, yaml) {
     if (!isEqual(newValue, value) && isArray(valNode.value)) {
 
       // recurse
-      yaml = updateMap(valNode, newValue, valNode.value, yaml);
+      yaml = updateMap(valNode, newValue, value, yaml);
 
       // remove the key/value from newJson so it's not detected as new pair in
       // later code

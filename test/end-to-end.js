@@ -3,6 +3,7 @@
 import {expect} from 'chai';
 import YAWN from '../src/index.js';
 
+
 const input = `
 swagger: '2.0'
 info:
@@ -42,7 +43,7 @@ paths:
   /newPath:
     get:
       responses:
-        200:
+        '200':
           description: OK
 `;
 
