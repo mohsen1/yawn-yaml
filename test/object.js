@@ -127,5 +127,63 @@ describe('preserves comments and styling in objects when', ()=> {
           cond: good
         # trailing comment`);
     });
+
+    it('two new non-primitive value has been added to a map', ()=> {
+      let str = `
+        # leading comment
+        map:
+          val: 1
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.map = {
+        val: 1,
+        hash1: {ans: 42, cond: 'good'},
+        hash2: {ans: 34, cond: 'not-bad'}
+      };
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        map:
+          val: 1
+          hash2:
+            ans: 34
+            cond: not-bad
+          hash1:
+            ans: 42
+            cond: good
+        # trailing comment`);
+    });
+
+    it('two new non-primitive value has been added to root', ()=> {
+      let str = `
+        # leading comment
+        map:
+          val: 1
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json = {
+        map: {val: 1},
+        hash1: {ans: 42, cond: 'good'},
+        hash2: {ans: 34, cond: 'not-bad'}
+      };
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        map:
+          val: 1
+        hash2:
+          ans: 34
+          cond: not-bad
+        hash1:
+          ans: 42
+          cond: good
+        # trailing comment`);
+    });
   });
 });
