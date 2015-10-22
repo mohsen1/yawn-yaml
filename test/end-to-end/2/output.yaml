@@ -1,0 +1,27 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Simple API
+paths:
+  /:
+    get:
+      responses:
+        '200':
+          description: OK
+  /new-models:
+    post:
+      description: Make a new `NewModel`.
+      parameters:
+        - name: body
+          description: A new `NewModel`
+          in: body
+          schema:
+            $ref: '#/definitions/NewModel'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/NewModel'
+definitions:
+  NewModel:
+    type: string

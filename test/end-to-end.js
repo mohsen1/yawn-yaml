@@ -1,72 +1,24 @@
 'use strict';
 
+import {readFileSync, readdirSync} from 'fs';
+import {join} from 'path';
+import {load} from 'js-yaml';
 import {expect} from 'chai';
 import YAWN from '../src/index.js';
 
+describe('end to end', ()=> {
 
-const input = `
-swagger: '2.0'
-info:
-  version: 0.0.0
-  title: Simple API
-paths:
-  /:
+  readdirSync(join(__dirname, 'end-to-end')).forEach(testCase=> {
 
-    parameters:
-      - name: test
-        in: query
-        type: string
+    it(`preserves comments and styling for test case ${testCase}`, ()=> {
 
-    get:
-      responses:
-        '200':
-          description: OK
-`;
+      const path = join(__dirname, 'end-to-end', testCase);
+      const input = readFileSync(join(path, 'input.yaml')).toString();
+      const output = readFileSync(join(path, 'output.yaml')).toString();
+      const newJson = load(output);
 
-const output = `
-swagger: '2.0'
-info:
-  version: 0.0.0
-  title: Simple API
-paths:
-  /:
-
-    parameters:
-      - name: test
-        in: query
-        type: string
-
-    get:
-      responses:
-        '200':
-          description: OK
-  /newPath:
-    get:
-      responses:
-        '200':
-          description: OK
-`;
-
-describe('preserves comments and styling when', ()=> {
-
-  describe('JSON is complex', ()=> {
-    // debugger
-    it('adds new object hash', ()=> {
-      let yawn = new YAWN(input);
-
-      let json = yawn.json;
-
-      json.paths['/newPath'] = {
-        get: {
-          responses: {
-            200: {
-              description: 'OK'
-            }
-          }
-        }
-      };
-
-      yawn.json = json;
+      const yawn = new YAWN(input);
+      yawn.json = newJson;
 
       expect(yawn.yaml).to.equal(output);
     });
