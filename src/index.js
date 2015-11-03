@@ -339,12 +339,13 @@ function removeArrayElement(node, yaml) {
  * @retusns {Mark}
 */
 function getNodeEndMark(ast) {
-  if (isArray(ast.value)) {
+  if (isArray(ast.value) && ast.value.length) {
     let lastItem = last(ast.value);
 
-    if (isArray(lastItem)) {
+    if (isArray(lastItem) && lastItem.length) {
       return getNodeEndMark(last(lastItem));
     }
+
     return getNodeEndMark(lastItem);
   }
 
