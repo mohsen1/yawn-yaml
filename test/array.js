@@ -44,7 +44,27 @@ describe('preserves comments and styling when', ()=> {
         # trailing comment`);
     });
 
-    xit('TODO: two items in array are changed', ()=> {
+    it('one item is added to the array', ()=> {
+      let str = `
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.push('value3');
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        - value1 # inline comment
+        - value2
+        - value3
+        # trailing comment`);
+    });
+
+    it('two items in array are changed', ()=> {
       let str = `
         # leading comment
         - value1 # inline comment
@@ -84,7 +104,7 @@ describe('preserves comments and styling when', ()=> {
         # trailing comment`);
     });
 
-    xit('TODO: one item in middle is deleted', ()=> {
+    it('one item in middle is deleted', ()=> {
       let str = `
         # leading comment
         - value1 # inline comment
@@ -100,7 +120,7 @@ describe('preserves comments and styling when', ()=> {
       expect(yawn.yaml).to.equal(`
         # leading comment
         - value1 # inline comment
-
+${'        '}
         - value3
         # trailing comment`);
     });
