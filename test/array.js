@@ -72,16 +72,13 @@ describe('preserves comments and styling when', ()=> {
         # trailing comment`;
 
       let yawn = new YAWN(str);
-      let json = yawn.json;
-      json[0] = 'value0';
-      json[1] = 'value3';
-      yawn.json = json;
+      yawn.json = ['newVal1', 'newVal2'];
 
       expect(yawn.yaml).to.equal(`
         # leading comment
          # inline comment
-        - value3
-        - value0
+        - newVal2
+        - newVal1
         # trailing comment`);
     });
 

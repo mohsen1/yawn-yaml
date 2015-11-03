@@ -103,25 +103,7 @@ export default class YAWN {
     // SEQ_TAG
     // -------------------------------------------------------------------------
     if (ast.tag === SEQ_TAG) {
-      let values = ast.value.map(item => item.value);
-
-      // new items in newJson
-      difference(newJson, values).forEach((newItem)=> {
-        this.yaml = insertAfterNode(ast, cleanDump([newItem]), this.yaml);
-      });
-
-      // deleted items in newJson
-      difference(values, newJson).forEach((deletedItem)=> {
-
-        // find the node for this item
-        each(ast.value, node => {
-          if (isEqual(node.value, deletedItem)) {
-
-            // remove it from yaml
-            this.yaml = removeArrayElement(ast, node, this.yaml);
-          }
-        });
-      });
+      this.yaml = updateSeq(ast, newJson, this.yaml);
     }
   }
 
@@ -165,9 +147,41 @@ function getTag(json) {
 }
 
 /*
+ *
+ *
+ *
+*/
+function updateSeq(ast, newJson, yaml) {
+  let values = ast.value.map(item => item.value);
+
+  // new items in newJson
+  difference(newJson, values).forEach((newItem)=> {
+    yaml = insertAfterNode(ast, cleanDump([newItem]), yaml);
+  });
+
+  // deleted items in newJson
+  difference(values, newJson).forEach((deletedItem)=> {
+
+    // find the node for this item
+    each(ast.value, node => {
+      if (isEqual(node.value, deletedItem)) {
+
+        // remove it from yaml
+        yaml = removeArrayElement(ast, node, yaml);
+      }
+    });
+  });
+
+  return yaml;
+}
+
+/*
  * update a map structure with new values
  *
+ * @param {AST} ast - a map AST
+ * @param {any} newJson
  * @param {any} - json
+ * @param {string} yaml
  * @returns {boolean}
  * @throws {YAWNError} - if json has weird type
 */
@@ -200,15 +214,23 @@ function updateMap(ast, newJson, json, yaml) {
       delete newJson[keyNode.value];
     }
 
-    // non primitive value had changed
+    // non primitive value has changed
     if (!isEqual(newValue, value) && isArray(valNode.value)) {
 
-      // recurse
-      yaml = updateMap(valNode, newValue, value, yaml);
+      // array value has changed
+      if (isArray(newValue)) {
 
-      // remove the key/value from newJson so it's not detected as new pair in
-      // later code
-      delete newJson[keyNode.value];
+        // recurse
+        yaml = updateSeq(valNode, newValue, yaml);
+
+      // map value has changed
+      } else {
+        // recurse
+        yaml = updateMap(valNode, newValue, value, yaml);
+        // remove the key/value from newJson so it's not detected as new pair in
+        // later code
+        delete newJson[keyNode.value];
+      }
     }
   });
 
@@ -295,6 +317,12 @@ function removeArrayElement(ast, element, yaml) {
   while (index > 0 && yaml[index] !== DASH) {
     index--;
   }
+
+
+  // Remove the empty whitespace until the beginning of line
+  // while (index > 0 && yaml[index] !== LINE_SEPERATOR) {
+  //   index--;
+  // }
 
   return yaml.substr(0, index) +
     yaml.substring(element.end_mark.pointer);

@@ -1,0 +1,18 @@
+swagger: '2.0'
+info:
+  version: 0.0.0
+  title: Simple API
+paths:
+  /:
+    get:
+      parameters:
+        - name: parameter_one
+          in: query
+          type: string
+        - name: parameter_two
+          in: query
+          type: string
+      responses:
+        '200':
+          description: OK
+
