@@ -234,6 +234,8 @@ function updateMap(ast, newJson, json, yaml) {
         // recurse
         yaml = updateMap(valNode, newValue, value, yaml);
 
+        ast = compose(yaml);
+
         // remove the key/value from newJson so it's not detected as new pair in
         // later code
         delete newJson[keyNode.value];
