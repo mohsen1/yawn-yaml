@@ -155,9 +155,11 @@ function updateSeq(ast, newJson, yaml) {
   let values = ast.value.map(item => item.value);
 
   // new items in newJson
-  difference(newJson, values).forEach((newItem)=> {
-    yaml = insertAfterNode(ast, cleanDump([newItem]), yaml);
-  });
+  let newItems = difference(newJson, values).reverse();
+
+  if (newItems.length) {
+    yaml = insertAfterNode(ast, cleanDump(newItems), yaml);
+  }
 
   // deleted items in newJson
   difference(values, newJson).forEach((deletedItem)=> {
@@ -167,7 +169,10 @@ function updateSeq(ast, newJson, yaml) {
       if (isEqual(node.value, deletedItem)) {
 
         // remove it from yaml
-        yaml = removeArrayElement(ast, node, yaml);
+        yaml = removeArrayElement(node, yaml);
+
+        // re-compose the AST for accurate removals after
+        ast = compose(yaml);
       }
     });
   });
@@ -225,8 +230,10 @@ function updateMap(ast, newJson, json, yaml) {
 
       // map value has changed
       } else {
+
         // recurse
         yaml = updateMap(valNode, newValue, value, yaml);
+
         // remove the key/value from newJson so it's not detected as new pair in
         // later code
         delete newJson[keyNode.value];
@@ -300,32 +307,25 @@ function insertAfterNode(node, value, yaml) {
 }
 
 /*
- * Removes an element from array
+ * Removes a node from array
  *
- * @param {AST} ast
- * @param {Node} element
+ * @param {Node} node
  * @param {string} yaml
  *
  * @returns {string}
 */
-function removeArrayElement(ast, element, yaml) {
+function removeArrayElement(node, yaml) {
 
   // FIXME: Removing element from a YAML like `[a,b]` won't work with this.
 
   // find index of DASH(`-`) character for this array
-  let index = element.start_mark.pointer;
+  let index = node.start_mark.pointer;
   while (index > 0 && yaml[index] !== DASH) {
     index--;
   }
 
-
-  // Remove the empty whitespace until the beginning of line
-  // while (index > 0 && yaml[index] !== LINE_SEPERATOR) {
-  //   index--;
-  // }
-
   return yaml.substr(0, index) +
-    yaml.substring(element.end_mark.pointer);
+      yaml.substring(getNodeEndMark(node).pointer);
 }
 
 

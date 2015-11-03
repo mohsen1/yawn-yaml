@@ -77,6 +77,7 @@ describe('preserves comments and styling when', ()=> {
       expect(yawn.yaml).to.equal(`
         # leading comment
          # inline comment
+${'        '}
         - newVal2
         - newVal1
         # trailing comment`);
