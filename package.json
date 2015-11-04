@@ -1,6 +1,6 @@
 {
   "name": "yawn-yaml",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "YAML parser that preserves comments and styling",
   "main": "dist/yawn.js",
   "dependencies": {
