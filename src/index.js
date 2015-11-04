@@ -1,6 +1,6 @@
 'use strict';
 
-import {compose} from 'yaml-js';
+import {compose, serialize} from 'yaml-js';
 import {load, dump} from 'js-yaml';
 import {
   isArray,
@@ -13,8 +13,7 @@ import {
   repeat,
   each,
   contains,
-  last,
-  difference
+  last
 } from 'lodash';
 
 import YAWNError from './error.js';
@@ -105,6 +104,12 @@ export default class YAWN {
     if (ast.tag === SEQ_TAG) {
       this.yaml = updateSeq(ast, newJson, this.yaml);
     }
+
+    // Trim trailing whitespaces
+    this.yaml = this.yaml
+      .split(LINE_SEPERATOR)
+      .map(line=> line.replace(/[ \t]+$/, ''))
+      .join(LINE_SEPERATOR);
   }
 
   toString() {
@@ -152,21 +157,23 @@ function getTag(json) {
  *
 */
 function updateSeq(ast, newJson, yaml) {
-  let values = ast.value.map(item => item.value);
+  let values = load(serialize(ast));
 
   // new items in newJson
-  let newItems = difference(newJson, values).reverse();
+  let newItems = differenceWith(newJson, values, isEqual).reverse();
 
   if (newItems.length) {
     yaml = insertAfterNode(ast, cleanDump(newItems), yaml);
   }
 
   // deleted items in newJson
-  difference(values, newJson).forEach((deletedItem)=> {
+  let deletedItems = differenceWith(values, newJson, isEqual);
+
+  deletedItems.forEach(deletedItem=> {
 
     // find the node for this item
     each(ast.value, node => {
-      if (isEqual(node.value, deletedItem)) {
+      if (isEqual(load(serialize(node)), deletedItem)) {
 
         // remove it from yaml
         yaml = removeArrayElement(node, yaml);
@@ -368,9 +375,26 @@ function indent(str, depth) {
     .join(LINE_SEPERATOR);
 }
 
+/*
+ *
+ *
+*/
 function cleanDump(value) {
   return dump(value).replace(/\n$/, '');
 }
+
+/*
+ *
+ *
+*/
+function differenceWith(src, dest, compFn) {
+  return src.filter(srcItem=> {
+    return dest.every(destItem=> {
+      return !compFn(srcItem, destItem);
+    });
+  });
+}
+
 
 // TODO: fix UMD exports...
 if (typeof window !== 'undefined') {

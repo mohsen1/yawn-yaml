@@ -6,6 +6,7 @@ paths:
   /:
     get:
       parameters:
+
         - name: parameter_two
           in: query
           type: string
