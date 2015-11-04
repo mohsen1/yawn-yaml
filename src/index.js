@@ -408,9 +408,3 @@ function differenceWith(src, dest, compFn) {
     });
   });
 }
-
-
-// TODO: fix UMD exports...
-if (typeof window !== 'undefined') {
-  window.YAWN = YAWN;
-}
