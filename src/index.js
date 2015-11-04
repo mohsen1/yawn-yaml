@@ -152,8 +152,13 @@ function getTag(json) {
 }
 
 /*
+ * Update a sequence with new JSON
  *
+ * @param {Node} ast
+ * @param {object} newJson
+ * @param {string} yaml
  *
+ * @returns {string}
  *
 */
 function updateSeq(ast, newJson, yaml) {
@@ -376,7 +381,11 @@ function indent(str, depth) {
 }
 
 /*
+ * Dump a value to YAML sting without the trailing new line
  *
+ * @param {any} value
+ *
+ * @returns {string}
  *
 */
 function cleanDump(value) {
@@ -384,8 +393,13 @@ function cleanDump(value) {
 }
 
 /*
+ * find difference between two arrays by using a comparison function
  *
+ * @param {array<any>} src
+ * @param {array<any>} dest
+ * @param {function} compFn
  *
+ * @returns {array}
 */
 function differenceWith(src, dest, compFn) {
   return src.filter(srcItem=> {
