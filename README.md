@@ -20,9 +20,11 @@ let yawn = new YAWN(str);
 
 yawn.json = {value: 2};
 
+
+// value in `yawn.yaml` is now changed.
 console.log(yawn.yaml); // =>
 // # my comment
-// value: 1 # the value is here!
+// value: 2 # the value is here!
 
 ```
 
