@@ -9,7 +9,11 @@
 ## Usage
 
 ```js
+// If you use ES2015 modules
 import YAWN from 'yawn-yaml';
+
+// If you use CommonJS modules
+const YAWN = require('yawn-yaml/cjs')
 
 let str = `
 # my comment
