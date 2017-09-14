@@ -14,6 +14,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+var _os = require('os');
+
 var _yamlJs = require('yaml-js');
 
 var _jsYaml = require('js-yaml');
@@ -31,7 +33,7 @@ var FLOAT_TAG = 'tag:yaml.org,2002:float';
 var MAP_TAG = 'tag:yaml.org,2002:map';
 var SEQ_TAG = 'tag:yaml.org,2002:seq';
 
-var LINE_SEPERATOR = '\n';
+var LINE_SEPARATOR = _os.EOL;
 var SPACE = ' ';
 var DASH = '-';
 
@@ -131,9 +133,9 @@ var YAWN = (function () {
       }
 
       // Trim trailing whitespaces
-      this.yaml = this.yaml.split(LINE_SEPERATOR).map(function (line) {
+      this.yaml = this.yaml.split(LINE_SEPARATOR).map(function (line) {
         return line.replace(/[ \t]+$/, '');
-      }).join(LINE_SEPERATOR);
+      }).join(LINE_SEPARATOR);
     }
   }]);
 
@@ -325,7 +327,7 @@ function replaceNode(node, value, yaml) {
 function insertAfterNode(node, value, yaml) {
   var indentedValue = indent(value, node.start_mark.column);
 
-  return yaml.substr(0, getNodeEndMark(node).pointer) + LINE_SEPERATOR + indentedValue + yaml.substring(getNodeEndMark(node).pointer);
+  return yaml.substr(0, getNodeEndMark(node).pointer) + LINE_SEPARATOR + indentedValue + yaml.substring(getNodeEndMark(node).pointer);
 }
 
 /*
@@ -392,11 +394,11 @@ function getNodeEndMark(_x) {
  * @returns {string}
 */
 function indent(str, depth) {
-  return str.split(LINE_SEPERATOR).filter(function (line) {
+  return str.split(LINE_SEPARATOR).filter(function (line) {
     return line;
   }).map(function (line) {
     return (0, _lodash.repeat)(SPACE, depth) + line;
-  }).join(LINE_SEPERATOR);
+  }).join(LINE_SEPARATOR);
 }
 
 /*
