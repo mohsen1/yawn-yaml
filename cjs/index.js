@@ -33,7 +33,6 @@ var FLOAT_TAG = 'tag:yaml.org,2002:float';
 var MAP_TAG = 'tag:yaml.org,2002:map';
 var SEQ_TAG = 'tag:yaml.org,2002:seq';
 
-var LINE_SEPARATOR = _os.EOL;
 var SPACE = ' ';
 var DASH = '-';
 
@@ -133,9 +132,9 @@ var YAWN = (function () {
       }
 
       // Trim trailing whitespaces
-      this.yaml = this.yaml.split(LINE_SEPARATOR).map(function (line) {
+      this.yaml = this.yaml.split(_os.EOL).map(function (line) {
         return line.replace(/[ \t]+$/, '');
-      }).join(LINE_SEPARATOR);
+      }).join(_os.EOL);
     }
   }]);
 
@@ -327,7 +326,7 @@ function replaceNode(node, value, yaml) {
 function insertAfterNode(node, value, yaml) {
   var indentedValue = indent(value, node.start_mark.column);
 
-  return yaml.substr(0, getNodeEndMark(node).pointer) + LINE_SEPARATOR + indentedValue + yaml.substring(getNodeEndMark(node).pointer);
+  return yaml.substr(0, getNodeEndMark(node).pointer) + _os.EOL + indentedValue + yaml.substring(getNodeEndMark(node).pointer);
 }
 
 /*
@@ -394,11 +393,11 @@ function getNodeEndMark(_x) {
  * @returns {string}
 */
 function indent(str, depth) {
-  return str.split(LINE_SEPARATOR).filter(function (line) {
+  return str.split(_os.EOL).filter(function (line) {
     return line;
   }).map(function (line) {
     return (0, _lodash.repeat)(SPACE, depth) + line;
-  }).join(LINE_SEPARATOR);
+  }).join(_os.EOL);
 }
 
 /*
@@ -410,7 +409,13 @@ function indent(str, depth) {
  *
 */
 function cleanDump(value) {
-  return (0, _jsYaml.dump)(value).replace(/\n$/, '');
+  var yaml = (0, _jsYaml.dump)(value).replace(/\n$/, '');
+
+  if (_os.EOL !== '\n') {
+    yaml = yaml.replace(/\n/g, _os.EOL);
+  }
+
+  return yaml;
 }
 
 /*
