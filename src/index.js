@@ -26,7 +26,6 @@ const FLOAT_TAG = 'tag:yaml.org,2002:float';
 const MAP_TAG = 'tag:yaml.org,2002:map';
 const SEQ_TAG = 'tag:yaml.org,2002:seq';
 
-const LINE_SEPARATOR = EOL;
 const SPACE = ' ';
 const DASH = '-';
 
@@ -108,9 +107,9 @@ export default class YAWN {
 
     // Trim trailing whitespaces
     this.yaml = this.yaml
-      .split(LINE_SEPARATOR)
+      .split(EOL)
       .map(line=> line.replace(/[ \t]+$/, ''))
-      .join(LINE_SEPARATOR);
+      .join(EOL);
   }
 
   toString() {
@@ -316,7 +315,7 @@ function insertAfterNode(node, value, yaml) {
   let indentedValue = indent(value, node.start_mark.column);
 
   return yaml.substr(0, getNodeEndMark(node).pointer) +
-    LINE_SEPARATOR +
+    EOL +
     indentedValue +
     yaml.substring(getNodeEndMark(node).pointer);
 }
@@ -375,10 +374,10 @@ function getNodeEndMark(ast) {
 */
 function indent(str, depth) {
   return str
-    .split(LINE_SEPARATOR)
+    .split(EOL)
     .filter(line => line)
     .map(line => repeat(SPACE, depth) + line)
-    .join(LINE_SEPARATOR);
+    .join(EOL);
 }
 
 /*
@@ -390,7 +389,13 @@ function indent(str, depth) {
  *
 */
 function cleanDump(value) {
-  return dump(value).replace(/\n$/, '');
+  let yaml = dump(value).replace(/\n$/, '');
+
+  if (EOL !== '\n') {
+    yaml = yaml.replace(/\n/g, EOL);
+  }
+
+  return yaml;
 }
 
 /*
