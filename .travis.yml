@@ -1,5 +1,14 @@
 language: node_js
 node_js:
-  - '0.10'
-  - '0.12'
-  - 'stable'
+- '0.10'
+- '0.12'
+- stable
+deploy:
+  provider: npm
+  email: me@azimi.me
+  api_key:
+    secure: eWTnm8DdIvUPxwFMvwR6xKzGIBqeq3/ThlmZzF7YvEqy7DYyTWzF2oG0kLSVkWT9rjsht+5W+f2SJms6Gv+kLQN9X1nG318VEizFAAI/UkJKoQg9kxGypCxS2lwQK1PpQ15U1ZjWJdcgY7uFm7Cvahu+Uid5Eo/LgbhHnuWlnTiY5UYGh9UMpuDkkdgYgYFGbZkD441S7mBTX1SLutC3FgvUYfLdzIb6W6XVG2O3+vsJGAihR1G+YNz6vDOfFmtvT78OC9/gWKqi3WRVkOG4t1F2KKB35A4906ZhLyGUQA80p9OeEo0SwcoVjhfAYYpRQw4iC2xG+NzJjtW3lrbR04zKFUAPGsjIvyNo3cTk3RwvxVLnd1h0j4TanqauoDghzNJgtCoXLu6onryNwDQj90fXsXQuXJxeQp2QnmhzfN0r88jW0S759Uigyv+0ji1FaJOU4JeA15hM4DqUWAcWSjbtDL88gzYvCqCHeZdM2+bFaLu9ywYn8oySvQoFh/+aDfJD/COd62v+wSz7YujOEsYohMLFVv4rOQgDl1IQwaZeTQ2CZsbEEIdrf4JQ8Lgk3avKRfuxYo4jpQYjRpR0GE4gJ4GQaS5nhIxQGtU5wqGt8JSuu4fPywhu0yCBjam+lFZZ06T7pgI2DkWfbZcB7Kvzt/6K/iJ4BSuamXm89q0=
+  on:
+    repo: mohsen1/yawn-yaml
+    branch: master
+    tags: true
