@@ -1,0 +1,12 @@
+const fs = require('fs');
+var sourceContent = fs.readFileSync('./source.yml', "utf8");
+var Yawn = require('./index.js');
+var yaml = new Yawn(sourceContent);
+console.log(yaml.json);
+console.log(yaml.yaml);
+yaml.assign({foo: 'moo'});
+console.log(yaml.json);
+console.log(yaml.yaml);
+yaml.set({foo: 'moo'});
+console.log(yaml.json);
+console.log(yaml.yaml);
