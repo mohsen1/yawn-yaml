@@ -119,6 +119,20 @@ export default class YAWN {
   toJSON() {
     return this.json;
   }
+
+  getRemark(path) {
+    const ast = compose(this.yaml);
+    let pathlist = path.split('.');
+    let node = getNode(ast, pathlist);
+    return node && getNodeRemark(node, this.yaml);
+  }
+
+  setRemark(path, remark) {
+    const ast = compose(this.yaml);
+    let pathlist = path.split('.');
+    let node = getNode(ast, pathlist);
+    return !!node && !!(this.yaml = setNodeRemark(node, remark, this.yaml));
+  }
 }
 
 /*
@@ -163,31 +177,19 @@ function getTag(json) {
 */
 function updateSeq(ast, newJson, yaml) {
   let values = load(serialize(ast));
+  let min = Math.min(values.length, newJson.length);
 
-  // new items in newJson
-  let newItems = differenceWith(newJson, values, isEqual).reverse();
-
-  if (newItems.length) {
-    yaml = insertAfterNode(ast, cleanDump(newItems), yaml);
+  if (values.length > min) {
+    for (let i = values.length - 1; i >= min; --i) {
+      yaml = removeArrayElement(ast.value[i], yaml);
+    }
+  } else if (newJson.length > min) {
+    yaml = insertAfterNode(ast, cleanDump(newJson.slice(min)), yaml);
   }
 
-  // deleted items in newJson
-  let deletedItems = differenceWith(values, newJson, isEqual);
-
-  deletedItems.forEach(deletedItem=> {
-
-    // find the node for this item
-    each(ast.value, node => {
-      if (isEqual(load(serialize(node)), deletedItem)) {
-
-        // remove it from yaml
-        yaml = removeArrayElement(node, yaml);
-
-        // re-compose the AST for accurate removals after
-        ast = compose(yaml);
-      }
-    });
-  });
+  for (let i = min - 1; i >= 0; --i) {
+    yaml = changeArrayElement(ast.value[i], cleanDump(newJson[i]), yaml);
+  }
 
   return yaml;
 }
@@ -273,7 +275,7 @@ function updateMap(ast, newJson, json, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -288,7 +290,7 @@ function replacePrimitive(node, value, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -306,7 +308,7 @@ function replaceNode(node, value, yaml) {
  * Place value after node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -329,8 +331,23 @@ function insertAfterNode(node, value, yaml) {
  * @returns {string}
 */
 function removeArrayElement(node, yaml) {
+  let index = node.start_mark.pointer - node.start_mark.column - 1;
 
-  // FIXME: Removing element from a YAML like `[a,b]` won't work with this.
+  return yaml.substr(0, index) +
+      yaml.substring(getNodeEndMark(node).pointer);
+}
+
+/*
+ * Changes a node from array
+ *
+ * @param {Node} node
+ * @param value {string}
+ * @param {string} yaml
+ *
+ * @returns {string}
+*/
+function changeArrayElement(node, value, yaml) {
+  let indentedValue = indent(value, node.start_mark.column);
 
   // find index of DASH(`-`) character for this array
   let index = node.start_mark.pointer;
@@ -338,17 +355,17 @@ function removeArrayElement(node, yaml) {
     index--;
   }
 
-  return yaml.substr(0, index) +
+  return yaml.substr(0, index + 2) +
+      indentedValue.substr(node.start_mark.column) +
       yaml.substring(getNodeEndMark(node).pointer);
 }
-
 
 /*
  * Gets end mark of an AST
  *
  * @param {Node} ast
  *
- * @retusns {Mark}
+ * @returns {Mark}
 */
 function getNodeEndMark(ast) {
   if (isArray(ast.value) && ast.value.length) {
@@ -399,18 +416,86 @@ function cleanDump(value) {
 }
 
 /*
- * find difference between two arrays by using a comparison function
+ * Gets remark of an AST
  *
- * @param {array<any>} src
- * @param {array<any>} dest
- * @param {function} compFn
+ * @param {Node} ast
+ * @param {string} yaml
  *
- * @returns {array}
+ * @returns {string}
 */
-function differenceWith(src, dest, compFn) {
-  return src.filter(srcItem=> {
-    return dest.every(destItem=> {
-      return !compFn(srcItem, destItem);
-    });
-  });
+function getNodeRemark(ast, yaml) {
+  let index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== EOL) {
+    ++index;
+  }
+
+  if (EOL === yaml[index] || index === yaml.length) {
+    return '';
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    let end = index;
+    while (end < yaml.length && yaml[end] !== EOL) {
+      ++end;
+    }
+    return yaml.substring(index, end);
+  }
+}
+
+/*
+ * Sets remark of an AST
+ *
+ * @param {Node} ast
+ * @param {string} remark
+ * @param {string} yaml
+ *
+ * @returns {boolean}
+*/
+function setNodeRemark(ast, remark, yaml) {
+  let index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== EOL) {
+    ++index;
+  }
+
+  if (EOL === yaml[index] || index === yaml.length) {
+    return yaml.substr(0, index) + ' # ' + remark +
+        yaml.substring(index);
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    let end = index;
+    while (end < yaml.length && yaml[end] !== EOL) {
+      ++end;
+    }
+    return yaml.substr(0, index) + remark +
+        yaml.substring(end);
+  }
+}
+
+/*
+ * Gets node of an AST which path
+ *
+ * @param {Node} ast
+ * @param {array} path
+ *
+ * @returns {Node}
+*/
+function getNode(ast, path) {
+  if (path.length) {
+    if (ast.tag === MAP_TAG) {
+      let value = ast.value;
+      for (let i = 0; i < value.length; ++i) {
+        let [keyNode, valNode] = value[i];
+        if (path[0] === keyNode.value) {
+          return getNode(valNode, path.slice(1));
+        }
+      }
+      return undefined;
+    } else if (ast.tag === SEQ_TAG) {
+      return ast.value[path[0]] && getNode(ast.value[path[0]], path.slice(1));
+    }
+  }
+  return ast;
 }
