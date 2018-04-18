@@ -38,9 +38,8 @@ describe('preserves comments and styling when', ()=> {
 
       expect(yawn.yaml).to.equal(`
         # leading comment
-         # inline comment
+        - value0 # inline comment
         - value2
-        - value0
         # trailing comment`);
     });
 
@@ -76,10 +75,8 @@ describe('preserves comments and styling when', ()=> {
 
       expect(yawn.yaml).to.equal(`
         # leading comment
-         # inline comment
-
+        - newVal1 # inline comment
         - newVal2
-        - newVal1
         # trailing comment`);
     });
 
@@ -97,8 +94,7 @@ describe('preserves comments and styling when', ()=> {
 
       expect(yawn.yaml).to.equal(`
         # leading comment
-         # inline comment
-        - value2
+        - value2 # inline comment
         # trailing comment`);
     });
 
@@ -118,7 +114,6 @@ describe('preserves comments and styling when', ()=> {
       expect(yawn.yaml).to.equal(`
         # leading comment
         - value1 # inline comment
-
         - value3
         # trailing comment`);
     });
