@@ -119,6 +119,20 @@ export default class YAWN {
   toJSON() {
     return this.json;
   }
+
+  getRemark(path) {
+    const ast = compose(this.yaml);
+    let pathlist = path.split('.');
+    let node = getNode(ast, pathlist);
+    return node && getNodeRemark(node, this.yaml);
+  }
+
+  setRemark(path, remark) {
+    const ast = compose(this.yaml);
+    let pathlist = path.split('.');
+    let node = getNode(ast, pathlist);
+    return !!node && !!(this.yaml = setNodeRemark(node, remark, this.yaml));
+  }
 }
 
 /*
@@ -261,7 +275,7 @@ function updateMap(ast, newJson, json, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -294,7 +308,7 @@ function replaceNode(node, value, yaml) {
  * Place value after node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -341,7 +355,7 @@ function changeArrayElement(node, value, yaml) {
     index--;
   }
 
-  return yaml.substr(0, index + 2) + 
+  return yaml.substr(0, index + 2) +
       indentedValue.substr(node.start_mark.column) +
       yaml.substring(getNodeEndMark(node).pointer);
 }
@@ -351,7 +365,7 @@ function changeArrayElement(node, value, yaml) {
  *
  * @param {Node} ast
  *
- * @retusns {Mark}
+ * @returns {Mark}
 */
 function getNodeEndMark(ast) {
   if (isArray(ast.value) && ast.value.length) {
@@ -399,4 +413,89 @@ function cleanDump(value) {
   }
 
   return yaml;
+}
+
+/*
+ * Gets remark of an AST
+ *
+ * @param {Node} ast
+ * @param {string} yaml
+ *
+ * @returns {string}
+*/
+function getNodeRemark(ast, yaml) {
+  let index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== EOL) {
+    ++index;
+  }
+
+  if (EOL === yaml[index] || index === yaml.length) {
+    return '';
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    let end = index;
+    while (end < yaml.length && yaml[end] !== EOL) {
+      ++end;
+    }
+    return yaml.substring(index, end);
+  }
+}
+
+/*
+ * Sets remark of an AST
+ *
+ * @param {Node} ast
+ * @param {string} remark
+ * @param {string} yaml
+ *
+ * @returns {boolean}
+*/
+function setNodeRemark(ast, remark, yaml) {
+  let index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== EOL) {
+    ++index;
+  }
+
+  if (EOL === yaml[index] || index === yaml.length) {
+    return yaml.substr(0, index) + ' # ' + remark +
+        yaml.substring(index);
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    let end = index;
+    while (end < yaml.length && yaml[end] !== EOL) {
+      ++end;
+    }
+    return yaml.substr(0, index) + remark +
+        yaml.substring(end);
+  }
+}
+
+/*
+ * Gets node of an AST which path
+ *
+ * @param {Node} ast
+ * @param {array} path
+ *
+ * @returns {Node}
+*/
+function getNode(ast, path) {
+  if (path.length) {
+    if (ast.tag === MAP_TAG) {
+      let value = ast.value;
+      for (let i = 0; i < value.length; ++i) {
+        let [keyNode, valNode] = value[i];
+        if (path[0] === keyNode.value) {
+          return getNode(valNode, path.slice(1));
+        }
+      }
+      return undefined;
+    } else if (ast.tag === SEQ_TAG) {
+      return ast.value[path[0]] && getNode(ast.value[path[0]], path.slice(1));
+    }
+  }
+  return ast;
 }
