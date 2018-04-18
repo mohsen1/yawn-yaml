@@ -177,31 +177,19 @@ function getTag(json) {
 */
 function updateSeq(ast, newJson, yaml) {
   var values = (0, _jsYaml.load)((0, _yamlJs.serialize)(ast));
+  var min = Math.min(values.length, newJson.length);
 
-  // new items in newJson
-  var newItems = differenceWith(newJson, values, _lodash.isEqual).reverse();
-
-  if (newItems.length) {
-    yaml = insertAfterNode(ast, cleanDump(newItems), yaml);
+  if (values.length > min) {
+    for (var i = values.length - 1; i >= min; --i) {
+      yaml = removeArrayElement(ast.value[i], yaml);
+    }
+  } else if (newJson.length > min) {
+    yaml = insertAfterNode(ast, cleanDump(newJson.slice(min)), yaml);
   }
 
-  // deleted items in newJson
-  var deletedItems = differenceWith(values, newJson, _lodash.isEqual);
-
-  deletedItems.forEach(function (deletedItem) {
-
-    // find the node for this item
-    (0, _lodash.each)(ast.value, function (node) {
-      if ((0, _lodash.isEqual)((0, _jsYaml.load)((0, _yamlJs.serialize)(node)), deletedItem)) {
-
-        // remove it from yaml
-        yaml = removeArrayElement(node, yaml);
-
-        // re-compose the AST for accurate removals after
-        ast = (0, _yamlJs.compose)(yaml);
-      }
-    });
-  });
+  for (var i = min - 1; i >= 0; --i) {
+    yaml = changeArrayElement(ast.value[i], cleanDump(newJson[i]), yaml);
+  }
 
   return yaml;
 }
@@ -302,7 +290,7 @@ function replacePrimitive(node, value, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -338,8 +326,22 @@ function insertAfterNode(node, value, yaml) {
  * @returns {string}
 */
 function removeArrayElement(node, yaml) {
+  var index = node.start_mark.pointer - node.start_mark.column - 1;
 
-  // FIXME: Removing element from a YAML like `[a,b]` won't work with this.
+  return yaml.substr(0, index) + yaml.substring(getNodeEndMark(node).pointer);
+}
+
+/*
+ * Changes a node from array
+ *
+ * @param {Node} node
+ * @param value {string}
+ * @param {string} yaml
+ *
+ * @returns {string}
+*/
+function changeArrayElement(node, value, yaml) {
+  var indentedValue = indent(value, node.start_mark.column);
 
   // find index of DASH(`-`) character for this array
   var index = node.start_mark.pointer;
@@ -347,7 +349,7 @@ function removeArrayElement(node, yaml) {
     index--;
   }
 
-  return yaml.substr(0, index) + yaml.substring(getNodeEndMark(node).pointer);
+  return yaml.substr(0, index + 2) + indentedValue.substr(node.start_mark.column) + yaml.substring(getNodeEndMark(node).pointer);
 }
 
 /*
@@ -416,22 +418,5 @@ function cleanDump(value) {
   }
 
   return yaml;
-}
-
-/*
- * find difference between two arrays by using a comparison function
- *
- * @param {array<any>} src
- * @param {array<any>} dest
- * @param {function} compFn
- *
- * @returns {array}
-*/
-function differenceWith(src, dest, compFn) {
-  return src.filter(function (srcItem) {
-    return dest.every(function (destItem) {
-      return !compFn(srcItem, destItem);
-    });
-  });
 }
 module.exports = exports['default'];
