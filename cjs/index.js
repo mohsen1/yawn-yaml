@@ -67,6 +67,22 @@ var YAWN = (function () {
       return this.json;
     }
   }, {
+    key: 'getRemark',
+    value: function getRemark(path) {
+      var ast = (0, _yamlJs.compose)(this.yaml);
+      var pathlist = path.split('.');
+      var node = getNode(ast, pathlist);
+      return node && getNodeRemark(node, this.yaml);
+    }
+  }, {
+    key: 'setRemark',
+    value: function setRemark(path, remark) {
+      var ast = (0, _yamlJs.compose)(this.yaml);
+      var pathlist = path.split('.');
+      var node = getNode(ast, pathlist);
+      return !!node && !!(this.yaml = setNodeRemark(node, remark, this.yaml));
+    }
+  }, {
     key: 'json',
     get: function get() {
       return (0, _jsYaml.load)(this.yaml);
@@ -277,7 +293,7 @@ function updateMap(ast, newJson, json, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -306,7 +322,7 @@ function replaceNode(node, value, yaml) {
  * Place value after node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -357,7 +373,7 @@ function changeArrayElement(node, value, yaml) {
  *
  * @param {Node} ast
  *
- * @retusns {Mark}
+ * @returns {Mark}
 */
 function getNodeEndMark(_x) {
   var _again = true;
@@ -418,5 +434,114 @@ function cleanDump(value) {
   }
 
   return yaml;
+}
+
+/*
+ * Gets remark of an AST
+ *
+ * @param {Node} ast
+ * @param {string} yaml
+ *
+ * @returns {string}
+*/
+function getNodeRemark(ast, yaml) {
+  var index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== _os.EOL) {
+    ++index;
+  }
+
+  if (_os.EOL === yaml[index] || index === yaml.length) {
+    return '';
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    var end = index;
+    while (end < yaml.length && yaml[end] !== _os.EOL) {
+      ++end;
+    }
+    return yaml.substring(index, end);
+  }
+}
+
+/*
+ * Sets remark of an AST
+ *
+ * @param {Node} ast
+ * @param {string} remark
+ * @param {string} yaml
+ *
+ * @returns {boolean}
+*/
+function setNodeRemark(ast, remark, yaml) {
+  var index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== _os.EOL) {
+    ++index;
+  }
+
+  if (_os.EOL === yaml[index] || index === yaml.length) {
+    return yaml.substr(0, index) + ' # ' + remark + yaml.substring(index);
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    var end = index;
+    while (end < yaml.length && yaml[end] !== _os.EOL) {
+      ++end;
+    }
+    return yaml.substr(0, index) + remark + yaml.substring(end);
+  }
+}
+
+/*
+ * Gets node of an AST which path
+ *
+ * @param {Node} ast
+ * @param {array} path
+ *
+ * @returns {Node}
+*/
+function getNode(_x2, _x3) {
+  var _left;
+
+  var _again2 = true;
+
+  _function2: while (_again2) {
+    var ast = _x2,
+        path = _x3;
+    _again2 = false;
+
+    if (path.length) {
+      if (ast.tag === MAP_TAG) {
+        var value = ast.value;
+        for (var i = 0; i < value.length; ++i) {
+          var _value$i = _slicedToArray(value[i], 2);
+
+          var keyNode = _value$i[0];
+          var valNode = _value$i[1];
+
+          if (path[0] === keyNode.value) {
+            _x2 = valNode;
+            _x3 = path.slice(1);
+            _again2 = true;
+            value = i = _value$i = keyNode = valNode = undefined;
+            continue _function2;
+          }
+        }
+        return undefined;
+      } else if (ast.tag === SEQ_TAG) {
+        if (!(_left = ast.value[path[0]])) {
+          return _left;
+        }
+
+        _x2 = ast.value[path[0]];
+        _x3 = path.slice(1);
+        _again2 = true;
+        value = i = _value$i = keyNode = valNode = undefined;
+        continue _function2;
+      }
+    }
+    return ast;
+  }
 }
 module.exports = exports['default'];
