@@ -163,31 +163,19 @@ function getTag(json) {
 */
 function updateSeq(ast, newJson, yaml) {
   let values = load(serialize(ast));
+  let min = Math.min(values.length, newJson.length);
 
-  // new items in newJson
-  let newItems = differenceWith(newJson, values, isEqual).reverse();
-
-  if (newItems.length) {
-    yaml = insertAfterNode(ast, cleanDump(newItems), yaml);
+  if (values.length > min) {
+    for (let i = values.length - 1; i >= min; --i) {
+      yaml = removeArrayElement(ast.value[i], yaml);
+    }
+  } else if (newJson.length > min) {
+    yaml = insertAfterNode(ast, cleanDump(newJson.slice(min)), yaml);
   }
 
-  // deleted items in newJson
-  let deletedItems = differenceWith(values, newJson, isEqual);
-
-  deletedItems.forEach(deletedItem=> {
-
-    // find the node for this item
-    each(ast.value, node => {
-      if (isEqual(load(serialize(node)), deletedItem)) {
-
-        // remove it from yaml
-        yaml = removeArrayElement(node, yaml);
-
-        // re-compose the AST for accurate removals after
-        ast = compose(yaml);
-      }
-    });
-  });
+  for (let i = min - 1; i >= 0; --i) {
+    yaml = changeArrayElement(ast.value[i], cleanDump(newJson[i]), yaml);
+  }
 
   return yaml;
 }
@@ -288,7 +276,7 @@ function replacePrimitive(node, value, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -329,8 +317,23 @@ function insertAfterNode(node, value, yaml) {
  * @returns {string}
 */
 function removeArrayElement(node, yaml) {
+  let index = node.start_mark.pointer - node.start_mark.column - 1;
 
-  // FIXME: Removing element from a YAML like `[a,b]` won't work with this.
+  return yaml.substr(0, index) +
+      yaml.substring(getNodeEndMark(node).pointer);
+}
+
+/*
+ * Changes a node from array
+ *
+ * @param {Node} node
+ * @param value {string}
+ * @param {string} yaml
+ *
+ * @returns {string}
+*/
+function changeArrayElement(node, value, yaml) {
+  let indentedValue = indent(value, node.start_mark.column);
 
   // find index of DASH(`-`) character for this array
   let index = node.start_mark.pointer;
@@ -338,10 +341,10 @@ function removeArrayElement(node, yaml) {
     index--;
   }
 
-  return yaml.substr(0, index) +
+  return yaml.substr(0, index + 2) + 
+      indentedValue.substr(node.start_mark.column) +
       yaml.substring(getNodeEndMark(node).pointer);
 }
-
 
 /*
  * Gets end mark of an AST
@@ -396,21 +399,4 @@ function cleanDump(value) {
   }
 
   return yaml;
-}
-
-/*
- * find difference between two arrays by using a comparison function
- *
- * @param {array<any>} src
- * @param {array<any>} dest
- * @param {function} compFn
- *
- * @returns {array}
-*/
-function differenceWith(src, dest, compFn) {
-  return src.filter(srcItem=> {
-    return dest.every(destItem=> {
-      return !compFn(srcItem, destItem);
-    });
-  });
 }
