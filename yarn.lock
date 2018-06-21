@@ -71,6 +71,12 @@
   dependencies:
     commander "*"
 
+"@types/fs-extra@^5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-5.0.3.tgz#feb31d55eeae3ccd5f92dbce806344a6c777a713"
+  dependencies:
+    "@types/node" "*"
+
 "@types/jest@^23.1.1":
   version "23.1.1"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.1.1.tgz#c54ab1a5f41aa693c0957222dd10414416d0c87b"
@@ -1343,6 +1349,14 @@ fragment-cache@^0.2.1:
 fs-extra@6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-6.0.0.tgz#0f0afb290bb3deb87978da816fcd3c7797f3a817"
+  dependencies:
+    graceful-fs "^4.1.2"
+    jsonfile "^4.0.0"
+    universalify "^0.1.0"
+
+fs-extra@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-6.0.1.tgz#8abc128f7946e310135ddc93b98bddb410e7a34b"
   dependencies:
     graceful-fs "^4.1.2"
     jsonfile "^4.0.0"
