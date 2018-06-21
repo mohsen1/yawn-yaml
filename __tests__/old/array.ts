@@ -1,6 +1,6 @@
 'use strict';
 
-import YAWNYAML from '../src';
+import YAWNYAML from '../../src';
 
 xdescribe('preserves comments and styling when', () => {
     describe('JSON is an array and', () => {
