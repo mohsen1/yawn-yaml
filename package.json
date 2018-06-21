@@ -10,8 +10,8 @@
     "posttest": "yarn lint",
     "prepublish": "tsc",
     "precommit": "lint-staged",
-    "fix": "prettier --write '*.{ts,json,css,md}'",
-    "lint": "prettier -l '*.{ts,json,css,md}'"
+    "fix": "prettier --write '**/*.{ts,json,css,md}'",
+    "lint": "prettier -l '**/*.{ts,json,css,md}'"
   },
   "lint-staged": {
     "*.{ts,json,css,md}": [
@@ -45,11 +45,13 @@
   "homepage": "https://github.com/mohsen1/yawn-yaml#readme",
   "dependencies": {
     "js-yaml": "^3.12.0",
+    "lodash": "^4.17.10",
     "prettier": "prettier/prettier"
   },
   "devDependencies": {
     "@types/jest": "^23.1.1",
     "@types/js-yaml": "^3.11.1",
+    "@types/lodash": "^4.14.110",
     "@types/node": "^10.3.4",
     "husky": "^0.14.3",
     "jest": "^23.1.0",
