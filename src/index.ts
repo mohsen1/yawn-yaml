@@ -1,5 +1,18 @@
 // 'use strict';
 
+export default class YAWN {
+  constructor(private input: string) {}
+
+  public set json(_value: any) {}
+  public get json(): any {
+    return {};
+  }
+
+  public get yaml() {
+    return this.input;
+  }
+}
+
 // import { EOL } from 'os';
 // import {compose, serialize} from 'yaml-js';
 // import {load, dump} from 'js-yaml';
@@ -87,7 +100,6 @@
 
 //       return;
 //     }
-
 
 //     // -------------------------------------------------------------------------
 //     // MAP_TAG

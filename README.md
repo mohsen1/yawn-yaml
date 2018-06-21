@@ -13,7 +13,7 @@
 import YAWN from 'yawn-yaml';
 
 // If you use CommonJS modules
-const YAWN = require('yawn-yaml/cjs')
+const YAWN = require('yawn-yaml/cjs');
 
 let str = `
 # my comment
@@ -22,14 +22,12 @@ value: 1 # the value is here!
 
 let yawn = new YAWN(str);
 
-yawn.json = {value: 2};
-
+yawn.json = { value: 2 };
 
 // value in `yawn.yaml` is now changed.
 console.log(yawn.yaml); // =>
 // # my comment
 // value: 2 # the value is here!
-
 ```
 
 ## Installation
@@ -72,6 +70,6 @@ To make a new build run:
 npm run browserify
 ```
 
-
 ## License
+
 [MIT](./LICENSE)
