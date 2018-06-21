@@ -22,10 +22,9 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts)$",
     "moduleFileExtensions": [
       "ts",
-      "tsx",
       "js",
       "jsx",
       "json",
@@ -44,10 +43,13 @@
   },
   "homepage": "https://github.com/mohsen1/yawn-yaml#readme",
   "dependencies": {
+    "js-yaml": "^3.12.0",
     "prettier": "prettier/prettier"
   },
   "devDependencies": {
     "@types/jest": "^23.1.1",
+    "@types/js-yaml": "^3.11.1",
+    "@types/node": "^10.3.4",
     "husky": "^0.14.3",
     "jest": "^23.1.0",
     "lint-staged": "^7.2.0",

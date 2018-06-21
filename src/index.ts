@@ -1,15 +1,31 @@
-// 'use strict';
+import YAML from 'js-yaml';
+const { parsers } = require('prettier/src/language-yaml/parser-yaml.js');
+const { yaml: YAMLParser } = parsers;
 
 export default class YAWN {
-  constructor(private input: string) {}
+  private jsonValue: any;
+  private ast: any;
 
-  public set json(_value: any) {}
+  constructor(private input: string) {
+    this.yaml = input;
+  }
+
+  public set json(value: any) {
+    this.jsonValue = value;
+  }
+
   public get json(): any {
-    return {};
+    this.ast; // TODO
+    return this.jsonValue;
   }
 
   public get yaml() {
     return this.input;
+  }
+
+  public set yaml(value: string) {
+    this.jsonValue = YAML.load(value);
+    this.ast = YAMLParser.parse(value);
   }
 }
 

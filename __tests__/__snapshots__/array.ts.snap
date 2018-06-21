@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`preserves comments and styling when JSON is an array and one item in array is changed 1`] = `
+"
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment"
+`;
+
+exports[`preserves comments and styling when JSON is an array and one item is added to the array 1`] = `
+"
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment"
+`;
+
+exports[`preserves comments and styling when JSON is an array and one item is deleted 1`] = `
+"
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment"
+`;
+
+exports[`preserves comments and styling when JSON is an array and transformed to an object 1`] = `
+"
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment"
+`;
+
+exports[`preserves comments and styling when JSON is an array and two items in array are changed 1`] = `
+"
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment"
+`;
