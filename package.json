@@ -1,50 +1,26 @@
 {
   "name": "yawn-yaml",
   "version": "1.3.3",
+  "author": "Mohsen Azimi <me@azimi.me>",
+  "license": "MIT",
   "description": "YAML parser that preserves comments and styling",
-  "main": "dist/yawn.js",
-  "dependencies": {
-    "js-yaml": "^3.4.2",
-    "lodash": "^3.10.1",
-    "yaml-js": "^0.1.3"
-  },
-  "devDependencies": {
-    "chai": "^3.3.0",
-    "babel": "^5.8.23",
-    "babelify": "^6.3.0",
-    "browserify": "^11.2.0",
-    "browserify-global-shim": "^1.0.0",
-    "eslint": "^1.5.1",
-    "mocha": "^2.3.3",
-    "mocha-eslint": "^1.0.0"
-  },
+  "main": "dist/index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel/register",
-    "browserify": "browserify --debug src/index.js -s YAWN -t [ babelify --sourceMapRelative . ] --outfile dist/yawn.js",
-    "commonjs": "babel src --out-dir cjs",
-    "prepublish": "npm run browserify && npm run commonjs"
-  },
-  "browserify": {
-    "transform": [
-      "browserify-global-shim"
-    ]
-  },
-  "browserify-global-shim": {
-    "yaml-js": "yaml",
-    "js-yaml": "jsyaml",
-    "lodash": "_"
+    "test": "jest",
+    "prepublish": "tsc"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mohsen1/yawn.git"
+    "url": "git+https://github.com/mohsen1/yawn-yaml.git"
   },
   "keywords": [
     "yaml"
   ],
-  "author": "Mohsen Azimi <me@azimi.me>",
-  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mohsen1/yawn/issues"
+    "url": "https://github.com/mohsen1/yawn-yaml/issues"
   },
-  "homepage": "https://github.com/mohsen1/yawn#readme"
+  "homepage": "https://github.com/mohsen1/yawn-yaml#readme",
+  "dependencies": {
+    "prettier": "prettier/prettier"
+  }
 }
