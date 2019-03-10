@@ -83,7 +83,7 @@
     "no-alert": 2, // disallow the use of alert, confirm, and prompt
     "no-caller": 2, // disallow use of arguments.caller or arguments.callee
     "no-div-regex": 2, // disallow division operators explicitly at beginning of regular expression (off by default)
-    "no-else-return": 2, // disallow else after a return in an if (off by default)
+    // "no-else-return": 2, // disallow else after a return in an if (off by default)
     "no-empty-label": 2, // disallow use of labels for anything other then loops and switches
     "no-eq-null": 2, // disallow comparisons to null without a type-checking operator (off by default)
     "no-eval": 2, // disallow use of eval()
@@ -140,7 +140,7 @@
     "no-shadow-restricted-names": 2, // disallow shadowing of names such as arguments
     "no-undef": 2, // disallow use of undeclared variables unless mentioned in a /*global */ block
     "no-undef-init": 2, // disallow use of undefined when initializing variables
-    "no-undefined": 2, // disallow use of undefined variable (off by default)
+    // "no-undefined": 2, // disallow use of undefined variable (off by default)
     "no-unused-vars": 2, // disallow declaration of variables that are not used in the code
     "no-use-before-define": [2, "nofunc"], // disallow use of variables before they are defined
 
@@ -207,7 +207,7 @@
     // While the names of the rules may not match up with the JSHint/JSLint counterpart,
     // the functionality is the same.
     //
-    "max-depth": [2, 3], // specify the maximum depth that blocks can be nested (off by default)
+    "max-depth": [1, 4], // specify the maximum depth that blocks can be nested (off by default)
     "max-len": [2, 100, 2], // specify the maximum length of a line in your program (off by default)
     "max-params": [2, 5], // limits the number of parameters that can be used in the function declaration. (off by default)
     "max-statements": 0, // specify the maximum number of statement allowed in a function (off by default)

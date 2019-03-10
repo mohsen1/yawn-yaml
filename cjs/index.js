@@ -14,6 +14,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+var _os = require('os');
+
 var _yamlJs = require('yaml-js');
 
 var _jsYaml = require('js-yaml');
@@ -31,7 +33,6 @@ var FLOAT_TAG = 'tag:yaml.org,2002:float';
 var MAP_TAG = 'tag:yaml.org,2002:map';
 var SEQ_TAG = 'tag:yaml.org,2002:seq';
 
-var LINE_SEPERATOR = '\n';
 var SPACE = ' ';
 var DASH = '-';
 
@@ -64,6 +65,22 @@ var YAWN = (function () {
     key: 'toJSON',
     value: function toJSON() {
       return this.json;
+    }
+  }, {
+    key: 'getRemark',
+    value: function getRemark(path) {
+      var ast = (0, _yamlJs.compose)(this.yaml);
+      var pathlist = path.split('.');
+      var node = getNode(ast, pathlist);
+      return node && getNodeRemark(node, this.yaml);
+    }
+  }, {
+    key: 'setRemark',
+    value: function setRemark(path, remark) {
+      var ast = (0, _yamlJs.compose)(this.yaml);
+      var pathlist = path.split('.');
+      var node = getNode(ast, pathlist);
+      return !!node && !!(this.yaml = setNodeRemark(node, remark, this.yaml));
     }
   }, {
     key: 'json',
@@ -131,9 +148,9 @@ var YAWN = (function () {
       }
 
       // Trim trailing whitespaces
-      this.yaml = this.yaml.split(LINE_SEPERATOR).map(function (line) {
+      this.yaml = this.yaml.split(_os.EOL).map(function (line) {
         return line.replace(/[ \t]+$/, '');
-      }).join(LINE_SEPERATOR);
+      }).join(_os.EOL);
     }
   }]);
 
@@ -176,31 +193,19 @@ function getTag(json) {
 */
 function updateSeq(ast, newJson, yaml) {
   var values = (0, _jsYaml.load)((0, _yamlJs.serialize)(ast));
+  var min = Math.min(values.length, newJson.length);
 
-  // new items in newJson
-  var newItems = differenceWith(newJson, values, _lodash.isEqual).reverse();
-
-  if (newItems.length) {
-    yaml = insertAfterNode(ast, cleanDump(newItems), yaml);
+  if (values.length > min) {
+    for (var i = values.length - 1; i >= min; --i) {
+      yaml = removeArrayElement(ast.value[i], yaml);
+    }
+  } else if (newJson.length > min) {
+    yaml = insertAfterNode(ast, cleanDump(newJson.slice(min)), yaml);
   }
 
-  // deleted items in newJson
-  var deletedItems = differenceWith(values, newJson, _lodash.isEqual);
-
-  deletedItems.forEach(function (deletedItem) {
-
-    // find the node for this item
-    (0, _lodash.each)(ast.value, function (node) {
-      if ((0, _lodash.isEqual)((0, _jsYaml.load)((0, _yamlJs.serialize)(node)), deletedItem)) {
-
-        // remove it from yaml
-        yaml = removeArrayElement(node, yaml);
-
-        // re-compose the AST for accurate removals after
-        ast = (0, _yamlJs.compose)(yaml);
-      }
-    });
-  });
+  for (var i = min - 1; i >= 0; --i) {
+    yaml = changeArrayElement(ast.value[i], cleanDump(newJson[i]), yaml);
+  }
 
   return yaml;
 }
@@ -288,7 +293,7 @@ function updateMap(ast, newJson, json, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -301,7 +306,7 @@ function replacePrimitive(node, value, yaml) {
  * Place value in node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -317,7 +322,7 @@ function replaceNode(node, value, yaml) {
  * Place value after node range in yaml string
  *
  * @param node {Node}
- * @param value {any}
+ * @param value {string}
  * @param yaml {string}
  *
  * @returns {string}
@@ -325,7 +330,7 @@ function replaceNode(node, value, yaml) {
 function insertAfterNode(node, value, yaml) {
   var indentedValue = indent(value, node.start_mark.column);
 
-  return yaml.substr(0, getNodeEndMark(node).pointer) + LINE_SEPERATOR + indentedValue + yaml.substring(getNodeEndMark(node).pointer);
+  return yaml.substr(0, getNodeEndMark(node).pointer) + _os.EOL + indentedValue + yaml.substring(getNodeEndMark(node).pointer);
 }
 
 /*
@@ -337,8 +342,22 @@ function insertAfterNode(node, value, yaml) {
  * @returns {string}
 */
 function removeArrayElement(node, yaml) {
+  var index = node.start_mark.pointer - node.start_mark.column - 1;
 
-  // FIXME: Removing element from a YAML like `[a,b]` won't work with this.
+  return yaml.substr(0, index) + yaml.substring(getNodeEndMark(node).pointer);
+}
+
+/*
+ * Changes a node from array
+ *
+ * @param {Node} node
+ * @param value {string}
+ * @param {string} yaml
+ *
+ * @returns {string}
+*/
+function changeArrayElement(node, value, yaml) {
+  var indentedValue = indent(value, node.start_mark.column);
 
   // find index of DASH(`-`) character for this array
   var index = node.start_mark.pointer;
@@ -346,7 +365,7 @@ function removeArrayElement(node, yaml) {
     index--;
   }
 
-  return yaml.substr(0, index) + yaml.substring(getNodeEndMark(node).pointer);
+  return yaml.substr(0, index + 2) + indentedValue.substr(node.start_mark.column) + yaml.substring(getNodeEndMark(node).pointer);
 }
 
 /*
@@ -354,7 +373,7 @@ function removeArrayElement(node, yaml) {
  *
  * @param {Node} ast
  *
- * @retusns {Mark}
+ * @returns {Mark}
 */
 function getNodeEndMark(_x) {
   var _again = true;
@@ -392,11 +411,11 @@ function getNodeEndMark(_x) {
  * @returns {string}
 */
 function indent(str, depth) {
-  return str.split(LINE_SEPERATOR).filter(function (line) {
+  return str.split(_os.EOL).filter(function (line) {
     return line;
   }).map(function (line) {
     return (0, _lodash.repeat)(SPACE, depth) + line;
-  }).join(LINE_SEPERATOR);
+  }).join(_os.EOL);
 }
 
 /*
@@ -408,23 +427,121 @@ function indent(str, depth) {
  *
 */
 function cleanDump(value) {
-  return (0, _jsYaml.dump)(value).replace(/\n$/, '');
+  var yaml = (0, _jsYaml.dump)(value).replace(/\n$/, '');
+
+  if (_os.EOL !== '\n') {
+    yaml = yaml.replace(/\n/g, _os.EOL);
+  }
+
+  return yaml;
 }
 
 /*
- * find difference between two arrays by using a comparison function
+ * Gets remark of an AST
  *
- * @param {array<any>} src
- * @param {array<any>} dest
- * @param {function} compFn
+ * @param {Node} ast
+ * @param {string} yaml
  *
- * @returns {array}
+ * @returns {string}
 */
-function differenceWith(src, dest, compFn) {
-  return src.filter(function (srcItem) {
-    return dest.every(function (destItem) {
-      return !compFn(srcItem, destItem);
-    });
-  });
+function getNodeRemark(ast, yaml) {
+  var index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== _os.EOL) {
+    ++index;
+  }
+
+  if (_os.EOL === yaml[index] || index === yaml.length) {
+    return '';
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    var end = index;
+    while (end < yaml.length && yaml[end] !== _os.EOL) {
+      ++end;
+    }
+    return yaml.substring(index, end);
+  }
+}
+
+/*
+ * Sets remark of an AST
+ *
+ * @param {Node} ast
+ * @param {string} remark
+ * @param {string} yaml
+ *
+ * @returns {boolean}
+*/
+function setNodeRemark(ast, remark, yaml) {
+  var index = getNodeEndMark(ast).pointer;
+  while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== _os.EOL) {
+    ++index;
+  }
+
+  if (_os.EOL === yaml[index] || index === yaml.length) {
+    return yaml.substr(0, index) + ' # ' + remark + yaml.substring(index);
+  } else {
+    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+      ++index;
+    }
+    var end = index;
+    while (end < yaml.length && yaml[end] !== _os.EOL) {
+      ++end;
+    }
+    return yaml.substr(0, index) + remark + yaml.substring(end);
+  }
+}
+
+/*
+ * Gets node of an AST which path
+ *
+ * @param {Node} ast
+ * @param {array} path
+ *
+ * @returns {Node}
+*/
+function getNode(_x2, _x3) {
+  var _left;
+
+  var _again2 = true;
+
+  _function2: while (_again2) {
+    var ast = _x2,
+        path = _x3;
+    _again2 = false;
+
+    if (path.length) {
+      if (ast.tag === MAP_TAG) {
+        var value = ast.value;
+        for (var i = 0; i < value.length; ++i) {
+          var _value$i = _slicedToArray(value[i], 2);
+
+          var keyNode = _value$i[0];
+          var valNode = _value$i[1];
+
+          if (path[0] === keyNode.value) {
+            _x2 = valNode;
+            _x3 = path.slice(1);
+            _again2 = true;
+            value = i = _value$i = keyNode = valNode = undefined;
+            continue _function2;
+          }
+        }
+        return undefined;
+      } else if (ast.tag === SEQ_TAG) {
+        if (!(_left = ast.value[path[0]])) {
+          return _left;
+        }
+
+        _x2 = ast.value[path[0]];
+        _x3 = path.slice(1);
+        _again2 = true;
+        value = i = _value$i = keyNode = valNode = undefined;
+        continue _function2;
+      }
+    }
+    return ast;
+  }
 }
 module.exports = exports['default'];

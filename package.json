@@ -1,6 +1,6 @@
 {
   "name": "yawn-yaml",
-  "version": "1.3.0",
+  "version": "1.3.3",
   "description": "YAML parser that preserves comments and styling",
   "main": "dist/yawn.js",
   "dependencies": {
@@ -21,7 +21,8 @@
   "scripts": {
     "test": "mocha --compilers js:babel/register",
     "browserify": "browserify --debug src/index.js -s YAWN -t [ babelify --sourceMapRelative . ] --outfile dist/yawn.js",
-    "commonjs": "babel src --out-dir cjs"
+    "commonjs": "babel src --out-dir cjs",
+    "prepublish": "npm run browserify && npm run commonjs"
   },
   "browserify": {
     "transform": [
