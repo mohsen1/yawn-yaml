@@ -13,7 +13,7 @@ import {
   isEqual,
   repeat,
   each,
-  contains,
+  includes,
   last
 } from 'lodash';
 
@@ -82,7 +82,7 @@ export default class YAWN {
     // -------------------------------------------------------------------------
     // NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG
     // -------------------------------------------------------------------------
-    if (contains([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
+    if (includes([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
       this.yaml = replacePrimitive(ast, newJson, this.yaml);
 
       return;

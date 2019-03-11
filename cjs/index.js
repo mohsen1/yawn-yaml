@@ -125,7 +125,7 @@ var YAWN = (function () {
       // -------------------------------------------------------------------------
       // NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG
       // -------------------------------------------------------------------------
-      if ((0, _lodash.contains)([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
+      if ((0, _lodash.includes)([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
         this.yaml = replacePrimitive(ast, newJson, this.yaml);
 
         return;
