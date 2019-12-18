@@ -118,6 +118,27 @@ describe('preserves comments and styling when', ()=> {
         # trailing comment`);
     });
 
+    it('two items are deleted', () => {
+      let str = `
+        # leading comment
+        - value1 # inline comment
+        - value2
+        - value3
+        - value4
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json = json.slice(0, 1).concat(json.slice(3));
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        - value1 # inline comment
+        - value4
+        # trailing comment`);
+    });
+
     it('one item is added', ()=> {
       let str = `
         # leading comment
@@ -135,6 +156,28 @@ describe('preserves comments and styling when', ()=> {
         - value1 # inline comment
         - value2
         - value3
+        # trailing comment`);
+    });
+
+    it('two items are added', () => {
+      let str = `
+        # leading comment
+        - value1 # inline comment
+        - value2
+        # trailing comment`;
+
+      let yawn = new YAWN(str);
+      let json = yawn.json;
+      json.push('value3');
+      json.push('value4');
+      yawn.json = json;
+
+      expect(yawn.yaml).to.equal(`
+        # leading comment
+        - value1 # inline comment
+        - value2
+        - value3
+        - value4
         # trailing comment`);
     });
   });

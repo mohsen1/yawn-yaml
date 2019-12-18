@@ -148,12 +148,12 @@ describe('preserves comments and styling in objects when', ()=> {
         # leading comment
         map:
           val: 1
-          hash2:
-            ans: 34
-            cond: not-bad
           hash1:
             ans: 42
             cond: good
+          hash2:
+            ans: 34
+            cond: not-bad
         # trailing comment`);
     });
 
@@ -165,8 +165,7 @@ describe('preserves comments and styling in objects when', ()=> {
         # trailing comment`;
 
       let yawn = new YAWN(str);
-      let json = yawn.json;
-      json = {
+      let json = {
         map: {val: 1},
         hash1: {ans: 42, cond: 'good'},
         hash2: {ans: 34, cond: 'not-bad'}
@@ -177,13 +176,46 @@ describe('preserves comments and styling in objects when', ()=> {
         # leading comment
         map:
           val: 1
-        hash2:
-          ans: 34
-          cond: not-bad
         hash1:
           ans: 42
           cond: good
+        hash2:
+          ans: 34
+          cond: not-bad
         # trailing comment`);
+    });
+
+
+    it('multiple objects are modified', () => {
+      let str = `
+      # leading comment
+      a:
+        x: 'a'
+      b:
+        y: 'b'
+      # trailing comment
+        `;
+
+      let yawn = new YAWN(str);
+      yawn.json = {
+        a: {
+          x: 'abc'
+        },
+        b: {
+          y: 'b',
+          z: 'abc'
+        }
+      };
+
+      expect(yawn.yaml).to.equal(`
+      # leading comment
+      a:
+        x: abc
+      b:
+        y: 'b'
+        z: abc
+      # trailing comment
+`);
     });
   });
 });
