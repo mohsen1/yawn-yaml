@@ -69,11 +69,11 @@ export default class YAWN {
       // replace this.yaml value from start to end mark with newYaml if node is
       // primitive
       if (!isObject(newJson)) {
-        this.yaml = replacePrimitive(ast, newYaml, this.yaml);
+        this.yaml = replacePrimitive(ast, newYaml, this.yaml, 0);
 
       // if node is not primitive
       } else {
-        this.yaml = replaceNode(ast, newYaml, this.yaml);
+        this.yaml = replaceNode(ast, newYaml, this.yaml, 0);
       }
 
       return;
@@ -83,7 +83,7 @@ export default class YAWN {
     // NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG
     // -------------------------------------------------------------------------
     if (includes([NULL_TAG, STR_TAG, INT_TAG, FLOAT_TAG], ast.tag)) {
-      this.yaml = replacePrimitive(ast, newJson, this.yaml);
+      this.yaml = replacePrimitive(ast, newJson, this.yaml, 0);
 
       return;
     }
@@ -95,14 +95,14 @@ export default class YAWN {
     if (ast.tag === MAP_TAG) {
       let json = this.json;
 
-      this.yaml = updateMap(ast, newJson, json, this.yaml);
+      this.yaml = updateMap(ast, newJson, json, this.yaml, 0);
     }
 
     // -------------------------------------------------------------------------
     // SEQ_TAG
     // -------------------------------------------------------------------------
     if (ast.tag === SEQ_TAG) {
-      this.yaml = updateSeq(ast, newJson, this.yaml);
+      this.yaml = updateSeq(ast, newJson, this.yaml, 0);
     }
 
     // Trim trailing whitespaces
@@ -175,20 +175,23 @@ function getTag(json) {
  * @returns {string}
  *
 */
-function updateSeq(ast, newJson, yaml) {
+function updateSeq(ast, newJson, yaml, offset) {
   let values = load(serialize(ast));
   let min = Math.min(values.length, newJson.length);
-
-  if (values.length > min) {
-    for (let i = values.length - 1; i >= min; --i) {
-      yaml = removeArrayElement(ast.value[i], yaml);
-    }
-  } else if (newJson.length > min) {
-    yaml = insertAfterNode(ast, cleanDump(newJson.slice(min)), yaml);
+  for (let i = 0; i < min; i++) {
+    const newYaml = changeArrayElement(ast.value[i], cleanDump(newJson[i]), yaml, offset);
+    offset = offset + newYaml.length - yaml.length;
+    yaml = newYaml;
   }
 
-  for (let i = min - 1; i >= 0; --i) {
-    yaml = changeArrayElement(ast.value[i], cleanDump(newJson[i]), yaml);
+  if (values.length > min) {
+    for (let i = min; i < values.length; i++) {
+      const newYaml = removeArrayElement(ast.value[i], yaml, offset);
+      offset = offset + newYaml.length - yaml.length;
+      yaml = newYaml;
+    }
+  } else if (newJson.length > min) {
+    yaml = insertAfterNode(ast, cleanDump(newJson.slice(min)), yaml, offset);
   }
 
   return yaml;
@@ -204,8 +207,7 @@ function updateSeq(ast, newJson, yaml) {
  * @returns {boolean}
  * @throws {YAWNError} - if json has weird type
 */
-function updateMap(ast, newJson, json, yaml) {
-
+function updateMap(ast, newJson, json, yaml, offset) {
   // look for changes
   each(ast.value, pair => {
     let [keyNode, valNode] = pair;
@@ -214,8 +216,10 @@ function updateMap(ast, newJson, json, yaml) {
     if (isUndefined(newJson[keyNode.value])) {
 
       // TODO: can we use of the methods below?
-      yaml = yaml.substr(0, keyNode.start_mark.pointer) +
-        yaml.substring(getNodeEndMark(valNode).pointer);
+      const newYaml = yaml.substr(0, keyNode.start_mark.pointer + offset) +
+        yaml.substring(getNodeEndMark(valNode).pointer + offset);
+      offset = offset + newYaml.length - yaml.length;
+      yaml = newYaml;
       return;
     }
 
@@ -226,8 +230,9 @@ function updateMap(ast, newJson, json, yaml) {
     if (newValue !== value && !isArray(valNode.value)) {
 
       // replace the value node
-      yaml = replacePrimitive(valNode, newValue, yaml);
-
+      const newYaml = replacePrimitive(valNode, newValue, yaml, offset);
+      offset = offset + newYaml.length - yaml.length;
+      yaml = newYaml;
       // remove the key/value from newJson so it's not detected as new pair in
       // later code
       delete newJson[keyNode.value];
@@ -240,15 +245,19 @@ function updateMap(ast, newJson, json, yaml) {
       if (isArray(newValue)) {
 
         // recurse
-        yaml = updateSeq(valNode, newValue, yaml);
+        const newYaml = updateSeq(valNode, newValue, yaml, offset);
+        offset = offset + newYaml.length - yaml.length;
+        yaml = newYaml;
 
       // map value has changed
       } else {
 
         // recurse
-        yaml = updateMap(valNode, newValue, value, yaml);
+        const newYaml = updateMap(valNode, newValue, value, yaml, offset);
+        offset = offset + newYaml.length - yaml.length;
+        yaml = newYaml;
 
-        ast = compose(yaml);
+        // ast = compose(yaml);
 
         // remove the key/value from newJson so it's not detected as new pair in
         // later code
@@ -264,7 +273,9 @@ function updateMap(ast, newJson, json, yaml) {
     if (isUndefined(json[key])) {
       let newValue = cleanDump({[key]: value});
 
-      yaml = insertAfterNode(ast, newValue, yaml);
+      const newYaml = insertAfterNode(ast, newValue, yaml, offset);
+      offset = offset + newYaml.length - yaml.length;
+      yaml = newYaml;
     }
   });
 
@@ -280,10 +291,10 @@ function updateMap(ast, newJson, json, yaml) {
  *
  * @returns {string}
 */
-function replacePrimitive(node, value, yaml) {
-  return yaml.substr(0, node.start_mark.pointer) +
+function replacePrimitive(node, value, yaml, offset) {
+  return yaml.substr(0, node.start_mark.pointer + offset) +
     String(value) +
-    yaml.substring(node.end_mark.pointer);
+    yaml.substring(node.end_mark.pointer + offset);
 }
 
 /*
@@ -295,13 +306,13 @@ function replacePrimitive(node, value, yaml) {
  *
  * @returns {string}
 */
-function replaceNode(node, value, yaml) {
+function replaceNode(node, value, yaml, offset) {
   let indentedValue = indent(value, node.start_mark.column);
-  let lineStart = node.start_mark.pointer - node.start_mark.column;
+  let lineStart = node.start_mark.pointer - node.start_mark.column + offset;
 
   return yaml.substr(0, lineStart) +
     indentedValue +
-    yaml.substring(getNodeEndMark(node).pointer);
+    yaml.substring(getNodeEndMark(node).pointer + offset);
 }
 
 /*
@@ -313,13 +324,13 @@ function replaceNode(node, value, yaml) {
  *
  * @returns {string}
 */
-function insertAfterNode(node, value, yaml) {
+function insertAfterNode(node, value, yaml, offset) {
   let indentedValue = indent(value, node.start_mark.column);
 
-  return yaml.substr(0, getNodeEndMark(node).pointer) +
+  return yaml.substr(0, getNodeEndMark(node).pointer + offset) +
     EOL +
     indentedValue +
-    yaml.substring(getNodeEndMark(node).pointer);
+    yaml.substring(getNodeEndMark(node).pointer + offset);
 }
 
 /*
@@ -330,11 +341,11 @@ function insertAfterNode(node, value, yaml) {
  *
  * @returns {string}
 */
-function removeArrayElement(node, yaml) {
-  let index = node.start_mark.pointer - node.start_mark.column - 1;
+function removeArrayElement(node, yaml, offset) {
+  let index = node.start_mark.pointer - node.start_mark.column - 1 + offset;
 
   return yaml.substr(0, index) +
-      yaml.substring(getNodeEndMark(node).pointer);
+      yaml.substring(getNodeEndMark(node).pointer + offset);
 }
 
 /*
@@ -346,18 +357,18 @@ function removeArrayElement(node, yaml) {
  *
  * @returns {string}
 */
-function changeArrayElement(node, value, yaml) {
+function changeArrayElement(node, value, yaml, offset) {
   let indentedValue = indent(value, node.start_mark.column);
 
   // find index of DASH(`-`) character for this array
-  let index = node.start_mark.pointer;
+  let index = node.start_mark.pointer + offset;
   while (index > 0 && yaml[index] !== DASH) {
     index--;
   }
 
   return yaml.substr(0, index + 2) +
       indentedValue.substr(node.start_mark.column) +
-      yaml.substring(getNodeEndMark(node).pointer);
+      yaml.substring(getNodeEndMark(node).pointer + offset);
 }
 
 /*
