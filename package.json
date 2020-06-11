@@ -15,7 +15,7 @@
     "browserify": "^16.5.1",
     "browserify-global-shim": "^1.0.0",
     "eslint": "^1.5.1",
-    "mocha": "^7.1.1",
+    "mocha": "^8.0.1",
     "mocha-eslint": "^1.0.0"
   },
   "scripts": {
