@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "chai": "^3.3.0",
-    "babel": "^5.8.23",
+    "babel": "^6.23.0",
     "babelify": "^6.3.0",
     "browserify": "^16.5.1",
     "browserify-global-shim": "^1.0.0",
