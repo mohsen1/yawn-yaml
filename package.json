@@ -16,7 +16,7 @@
     "browserify-global-shim": "^1.0.0",
     "eslint": "^1.5.1",
     "mocha": "^8.1.3",
-    "mocha-eslint": "^1.0.0"
+    "mocha-eslint": "^7.0.0"
   },
   "scripts": {
     "test": "mocha --compilers js:babel/register",
