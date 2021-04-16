@@ -310,7 +310,11 @@ function updateMap(ast, newJson, json, yaml, offset) {
  * @returns {string}
 */
 function replacePrimitive(node, value, yaml, offset) {
-  return yaml.substr(0, node.start_mark.pointer + offset) + String(value) + yaml.substring(node.end_mark.pointer + offset);
+  var yamlValue = String(value);
+  if (String(parseInt(value, 10)) === yamlValue) {
+    yamlValue = JSON.stringify(value);
+  }
+  return yaml.substr(0, node.start_mark.pointer + offset) + yamlValue + yaml.substring(node.end_mark.pointer + offset);
 }
 
 /*
