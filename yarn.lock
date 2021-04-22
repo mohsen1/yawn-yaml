@@ -232,7 +232,7 @@ atob@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
 
-babel-core@^5.0.0, babel-core@^5.6.21:
+babel-core@^5.6.21:
   version "5.8.38"
   resolved "https://registry.yarnpkg.com/babel-core/-/babel-core-5.8.38.tgz#1fcaee79d7e61b750b00b8e54f6dfc9d0af86558"
   dependencies:
@@ -364,12 +364,9 @@ babel@^5.8.23:
     slash "^1.0.0"
     source-map "^0.5.0"
 
-babelify@^6.3.0:
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/babelify/-/babelify-6.4.0.tgz#caf43888ba731b876b5567b643eecc66147693a5"
-  dependencies:
-    babel-core "^5.0.0"
-    object-assign "^4.0.0"
+babelify@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/babelify/-/babelify-10.0.0.tgz#fe73b1a22583f06680d8d072e25a1e0d1d1d7fb5"
 
 babylon@^5.8.38:
   version "5.8.38"
@@ -2659,7 +2656,7 @@ number-is-nan@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/number-is-nan/-/number-is-nan-1.0.1.tgz#097b602b53422a522c1afb8790318336941a011d"
 
-object-assign@^4.0.0, object-assign@^4.0.1, object-assign@^4.1.0, object-assign@^4.1.1:
+object-assign@^4.0.1, object-assign@^4.1.0, object-assign@^4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/object-assign/-/object-assign-4.1.1.tgz#2109adc7965887cfc05cbbd442cac8bfbb360863"
 
