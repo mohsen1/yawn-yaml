@@ -1,19 +1,13 @@
-# YAWN YAML
+# YAWN YAML 🥱
 
-[![Build Status](https://travis-ci.org/mohsen1/yawn-yaml.svg)](https://travis-ci.org/mohsen1/yawn-yaml)
-
-> YAML parser that preserves comments and styling
+**YAML parser that preserves comments and styling**
 
 **[Live Demo](http://azimi.me/yawn-yaml/demo/index.html)**
 
 ## Usage
 
-```js
-// If you use ES2015 modules
+```ts
 import YAWN from 'yawn-yaml';
-
-// If you use CommonJS modules
-const YAWN = require('yawn-yaml/cjs')
 
 let str = `
 # my comment
@@ -22,10 +16,12 @@ value: 1 # the value is here!
 
 let yawn = new YAWN(str);
 
-yawn.json = {value: 2};
+// update the `json` property
+yawn.json = { value: 2 };
 
 
 // value in `yawn.yaml` is now changed.
+// with comments and styling preserved.
 console.log(yawn.yaml); // =>
 // # my comment
 // value: 2 # the value is here!
@@ -34,44 +30,37 @@ console.log(yawn.yaml); // =>
 
 ## Installation
 
-Use npm or Bower to install `"yawn-yaml"` package
+Use npm or Bower to install [`yawn-yaml`](https://www.npmjs.com/package/yawn-yaml) package
 
 ```
 npm install --save yawn-yaml
 ```
 
 ```
-bower install --save yawm-yaml
+yarn add yawm-yaml
 ```
 
-If you wish to depend to ES6 version use [`src/index.js`](./src/index.js) file.
 
 ## Development
 
 To install dependencies run:
 
 ```
-npm install
+yarn install
+```
+
+
+To run tests continuously and watch for changes 
+
+```
+yarn start
 ```
 
 To run the test run:
 
 ```
-npm test
+yarn test
 ```
-
-To run tests continuously and watch for changes install [mocha](https://mochajs.org/) and run:
-
-```
-mocha --compilers js:babel/register -w
-```
-
-To make a new build run:
-
-```
-npm run browserify
-```
-
 
 ## License
 [MIT](./LICENSE)
