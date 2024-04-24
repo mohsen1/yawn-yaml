@@ -1,48 +1,64 @@
 {
   "name": "yawn-yaml",
-  "version": "1.2.1",
-  "description": "YAML parser that preserves comments and styling",
-  "main": "dist/yawn.js",
-  "dependencies": {
-    "js-yaml": "^3.4.2",
-    "lodash": "^3.10.1",
-    "yaml-js": "^0.1.3"
-  },
-  "devDependencies": {
-    "chai": "^3.3.0",
-    "babel": "^5.8.23",
-    "babelify": "^6.3.0",
-    "browserify": "^11.2.0",
-    "browserify-global-shim": "^1.0.0",
-    "eslint": "^1.5.1",
-    "mocha": "^2.3.3",
-    "mocha-eslint": "^1.0.0"
-  },
-  "scripts": {
-    "test": "mocha --compilers js:babel/register",
-    "browserify": "browserify --debug src/index.js -s YAWN -t [ babelify --sourceMapRelative . ] --outfile dist/yawn.js"
-  },
-  "browserify": {
-    "transform": [
-      "browserify-global-shim"
-    ]
-  },
-  "browserify-global-shim": {
-    "yaml-js": "yaml",
-    "js-yaml": "jsyaml",
-    "lodash": "_"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mohsen1/yawn.git"
-  },
-  "keywords": [
-    "yaml"
-  ],
-  "author": "Mohsen Azimi <me@azimi.me>",
+  "version": "2.0.0",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mohsen1/yawn/issues"
+  "author": "Mohsen Azimi",
+  "typings": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/yawn-yaml.esm.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "start": "parcel demo/index.html",
+    "build": "./build.sh",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
   },
-  "homepage": "https://github.com/mohsen1/yawn#readme"
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "size-limit": [
+    {
+      "path": "dist/yawn-yaml.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/yawn-yaml.esm.js",
+      "limit": "10 KB"
+    }
+  ],
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^11.1.2",
+    "@types/js-yaml": "^4.0.9",
+    "@types/lodash": "^4.17.0",
+    "buffer": "^5.5.0||^6.0.0",
+    "dedent": "^1.5.3",
+    "husky": "^9.0.11",
+    "os-browserify": "^0.3.0",
+    "parcel": "^2.12.0",
+    "process": "^0.11.10",
+    "size-limit": "^11.1.2",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.5",
+    "util": "^0.12.3"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21",
+    "yaml-js": "^0.3.1"
+  }
 }
