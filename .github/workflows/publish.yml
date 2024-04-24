@@ -1,11 +1,27 @@
 name: Node.js Package
-
-on:
-  release:
-    types: [created]
-
+on: [push]
 jobs:
-
+  gh-pages:
+    name: GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+          cache: "yarn"
+      - name: Install deps and build (with cache)
+        uses: bahmutov/npm-install@v1
+      - name: build
+        run: yarn run build
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
   npm-publish:
     name: npm Publish
     runs-on: ubuntu-latest
