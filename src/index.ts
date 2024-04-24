@@ -1,8 +1,7 @@
 'use strict';
 
-import { EOL } from 'os';
-import {compose, serialize} from 'yaml-js';
-import {load, dump} from 'js-yaml';
+import { compose, serialize } from 'yaml-js';
+import { load, dump } from 'js-yaml';
 import {
   isArray,
   isString,
@@ -14,10 +13,10 @@ import {
   repeat,
   each,
   includes,
-  last
+  last,
 } from 'lodash';
 
-import YAWNError from './error.js';
+const EOL = '\n';
 
 const NULL_TAG = 'tag:yaml.org,2002:null';
 const STR_TAG = 'tag:yaml.org,2002:str';
@@ -29,10 +28,25 @@ const SEQ_TAG = 'tag:yaml.org,2002:seq';
 const SPACE = ' ';
 const DASH = '-';
 
+export class YAWNError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.message = message;
+    this.name = 'YAWNError';
+  }
+}
+
+interface Node {
+  start_mark: { pointer: number; column: number };
+  end_mark: { pointer: number; column: number };
+  value: any;
+  tag: string;
+}
+
 // export default class YAWN {
 export default class YAWN {
-
-  constructor(str) {
+  yaml: string;
+  constructor(str: string) {
     if (!isString(str)) {
       throw new TypeError('str should be a string');
     }
@@ -44,8 +58,7 @@ export default class YAWN {
     return load(this.yaml);
   }
 
-  set json(newJson) {
-
+  set json(newJson: any) {
     // if json is not changed do nothing
     if (isEqual(this.json, newJson)) {
       return;
@@ -71,7 +84,7 @@ export default class YAWN {
       if (!isObject(newJson)) {
         this.yaml = replacePrimitive(ast, newYaml, this.yaml, 0);
 
-      // if node is not primitive
+        // if node is not primitive
       } else {
         this.yaml = replaceNode(ast, newYaml, this.yaml, 0);
       }
@@ -87,7 +100,6 @@ export default class YAWN {
 
       return;
     }
-
 
     // -------------------------------------------------------------------------
     // MAP_TAG
@@ -108,7 +120,7 @@ export default class YAWN {
     // Trim trailing whitespaces
     this.yaml = this.yaml
       .split(EOL)
-      .map(line=> line.replace(/[ \t]+$/, ''))
+      .map(line => line.replace(/[ \t]+$/, ''))
       .join(EOL);
   }
 
@@ -120,14 +132,14 @@ export default class YAWN {
     return this.json;
   }
 
-  getRemark(path) {
+  getRemark(path: string) {
     const ast = compose(this.yaml);
     let pathlist = path.split('.');
     let node = getNode(ast, pathlist);
     return node && getNodeRemark(node, this.yaml);
   }
 
-  setRemark(path, remark) {
+  setRemark(path: string, remark: string) {
     const ast = compose(this.yaml);
     let pathlist = path.split('.');
     let node = getNode(ast, pathlist);
@@ -138,11 +150,8 @@ export default class YAWN {
 /*
  * Determines the AST tag of a JSON object
  *
- * @param {any} - json
- * @returns {boolean}
- * @throws {YAWNError} - if json has weird type
-*/
-function getTag(json) {
+ */
+function getTag(json: any) {
   let tag = null;
 
   if (isArray(json)) {
@@ -167,26 +176,29 @@ function getTag(json) {
 
 /*
  * Update a sequence with new JSON
- *
- * @param {Node} ast
- * @param {object} newJson
- * @param {string} yaml
- *
- * @returns {string}
- *
-*/
-function updateSeq(ast, newJson, yaml, offset) {
-  let values = load(serialize(ast));
-  let min = Math.min(values.length, newJson.length);
-  for (let i = 0; i < min; i++) {
-    const newYaml = changeArrayElement(ast.value[i], cleanDump(newJson[i]), yaml, offset);
+ */
+function updateSeq(
+  ast: Node,
+  newJson: any[],
+  yaml: string,
+  offset: number
+): string {
+  let values: any[] = load(serialize(ast)) as any[];
+  let min: number = Math.min(values.length, newJson.length);
+  for (let i: number = 0; i < min; i++) {
+    const newYaml: string = changeArrayElement(
+      ast.value[i],
+      cleanDump(newJson[i]),
+      yaml,
+      offset
+    );
     offset = offset + newYaml.length - yaml.length;
     yaml = newYaml;
   }
 
   if (values.length > min) {
-    for (let i = min; i < values.length; i++) {
-      const newYaml = removeArrayElement(ast.value[i], yaml, offset);
+    for (let i: number = min; i < values.length; i++) {
+      const newYaml: string = removeArrayElement(ast.value[i], yaml, offset);
       offset = offset + newYaml.length - yaml.length;
       yaml = newYaml;
     }
@@ -199,24 +211,23 @@ function updateSeq(ast, newJson, yaml, offset) {
 
 /*
  * update a map structure with new values
- *
- * @param {AST} ast - a map AST
- * @param {any} newJson
- * @param {any} - json
- * @param {string} yaml
- * @returns {boolean}
- * @throws {YAWNError} - if json has weird type
-*/
-function updateMap(ast, newJson, json, yaml, offset) {
+ */
+function updateMap(
+  ast: Node,
+  newJson: any,
+  json: any,
+  yaml: string,
+  offset: number
+) {
   // look for changes
   each(ast.value, pair => {
     let [keyNode, valNode] = pair;
 
     // node is deleted
     if (isUndefined(newJson[keyNode.value])) {
-
       // TODO: can we use of the methods below?
-      const newYaml = yaml.substr(0, keyNode.start_mark.pointer + offset) +
+      const newYaml =
+        yaml.substr(0, keyNode.start_mark.pointer + offset) +
         yaml.substring(getNodeEndMark(valNode).pointer + offset);
       offset = offset + newYaml.length - yaml.length;
       yaml = newYaml;
@@ -228,7 +239,6 @@ function updateMap(ast, newJson, json, yaml, offset) {
 
     // primitive value has changed
     if (newValue !== value && !isArray(valNode.value)) {
-
       // replace the value node
       const newYaml = replacePrimitive(valNode, newValue, yaml, offset);
       offset = offset + newYaml.length - yaml.length;
@@ -240,18 +250,15 @@ function updateMap(ast, newJson, json, yaml, offset) {
 
     // non primitive value has changed
     if (!isEqual(newValue, value) && isArray(valNode.value)) {
-
       // array value has changed
       if (isArray(newValue)) {
-
         // recurse
         const newYaml = updateSeq(valNode, newValue, yaml, offset);
         offset = offset + newYaml.length - yaml.length;
         yaml = newYaml;
 
-      // map value has changed
+        // map value has changed
       } else {
-
         // recurse
         const newYaml = updateMap(valNode, newValue, value, yaml, offset);
         offset = offset + newYaml.length - yaml.length;
@@ -267,11 +274,10 @@ function updateMap(ast, newJson, json, yaml, offset) {
   });
 
   // look for new items to add
-  each(newJson, (value, key)=> {
-
+  each(newJson, (value, key) => {
     // item is new
     if (isUndefined(json[key])) {
-      let newValue = cleanDump({[key]: value});
+      let newValue = cleanDump({ [key]: value });
 
       const newYaml = insertAfterNode(ast, newValue, yaml, offset);
       offset = offset + newYaml.length - yaml.length;
@@ -284,80 +290,74 @@ function updateMap(ast, newJson, json, yaml, offset) {
 
 /*
  * Place value in node range in yaml string
- *
- * @param node {Node}
- * @param value {string}
- * @param yaml {string}
- *
- * @returns {string}
-*/
-function replacePrimitive(node, value, yaml, offset) {
-  return yaml.substr(0, node.start_mark.pointer + offset) +
+ */
+function replacePrimitive(
+  node: Node,
+  value: unknown,
+  yaml: string,
+  offset: number
+) {
+  return (
+    yaml.substr(0, node.start_mark.pointer + offset) +
     String(value) +
-    yaml.substring(node.end_mark.pointer + offset);
+    yaml.substring(node.end_mark.pointer + offset)
+  );
 }
 
 /*
  * Place value in node range in yaml string
- *
- * @param node {Node}
- * @param value {string}
- * @param yaml {string}
- *
- * @returns {string}
-*/
-function replaceNode(node, value, yaml, offset) {
+ */
+function replaceNode(node: Node, value: string, yaml: string, offset: number) {
   let indentedValue = indent(value, node.start_mark.column);
   let lineStart = node.start_mark.pointer - node.start_mark.column + offset;
 
-  return yaml.substr(0, lineStart) +
+  return (
+    yaml.substr(0, lineStart) +
     indentedValue +
-    yaml.substring(getNodeEndMark(node).pointer + offset);
+    yaml.substring(getNodeEndMark(node).pointer + offset)
+  );
 }
 
 /*
  * Place value after node range in yaml string
- *
- * @param node {Node}
- * @param value {string}
- * @param yaml {string}
- *
- * @returns {string}
-*/
-function insertAfterNode(node, value, yaml, offset) {
+ */
+function insertAfterNode(
+  node: Node,
+  value: string,
+  yaml: string,
+  offset: number
+) {
   let indentedValue = indent(value, node.start_mark.column);
 
-  return yaml.substr(0, getNodeEndMark(node).pointer + offset) +
+  return (
+    yaml.substr(0, getNodeEndMark(node).pointer + offset) +
     EOL +
     indentedValue +
-    yaml.substring(getNodeEndMark(node).pointer + offset);
+    yaml.substring(getNodeEndMark(node).pointer + offset)
+  );
 }
 
 /*
  * Removes a node from array
- *
- * @param {Node} node
- * @param {string} yaml
- *
- * @returns {string}
-*/
-function removeArrayElement(node, yaml, offset) {
+ */
+function removeArrayElement(node: Node, yaml: string, offset: number) {
   let index = node.start_mark.pointer - node.start_mark.column - 1 + offset;
 
-  return yaml.substr(0, index) +
-      yaml.substring(getNodeEndMark(node).pointer + offset);
+  return (
+    yaml.substr(0, index) +
+    yaml.substring(getNodeEndMark(node).pointer + offset)
+  );
 }
 
 /*
  * Changes a node from array
- *
- * @param {Node} node
- * @param value {string}
- * @param {string} yaml
- *
- * @returns {string}
-*/
-function changeArrayElement(node, value, yaml, offset) {
+ */
+function changeArrayElement(
+  node: Node,
+  value: string,
+  yaml: string,
+  offset: number
+): string {
   let indentedValue = indent(value, node.start_mark.column);
 
   // find index of DASH(`-`) character for this array
@@ -366,19 +366,17 @@ function changeArrayElement(node, value, yaml, offset) {
     index--;
   }
 
-  return yaml.substr(0, index + 2) +
-      indentedValue.substr(node.start_mark.column) +
-      yaml.substring(getNodeEndMark(node).pointer + offset);
+  return (
+    yaml.substr(0, index + 2) +
+    indentedValue.substr(node.start_mark.column) +
+    yaml.substring(getNodeEndMark(node).pointer + offset)
+  );
 }
 
 /*
  * Gets end mark of an AST
- *
- * @param {Node} ast
- *
- * @returns {Mark}
-*/
-function getNodeEndMark(ast) {
+ */
+function getNodeEndMark(ast: Node): Node['end_mark'] {
   if (isArray(ast.value) && ast.value.length) {
     let lastItem = last(ast.value);
 
@@ -394,13 +392,8 @@ function getNodeEndMark(ast) {
 
 /*
  * Indents a string with number of characters
- *
- * @param {string} str
- * @param {integer} depth - can be negative also
- *
- * @returns {string}
-*/
-function indent(str, depth) {
+ */
+function indent(str: string, depth: number) {
   return str
     .split(EOL)
     .filter(line => line)
@@ -410,13 +403,8 @@ function indent(str, depth) {
 
 /*
  * Dump a value to YAML sting without the trailing new line
- *
- * @param {any} value
- *
- * @returns {string}
- *
-*/
-function cleanDump(value) {
+ */
+function cleanDump(value: any) {
   let yaml = dump(value).replace(/\n$/, '');
 
   if (EOL !== '\n') {
@@ -428,13 +416,8 @@ function cleanDump(value) {
 
 /*
  * Gets remark of an AST
- *
- * @param {Node} ast
- * @param {string} yaml
- *
- * @returns {string}
-*/
-function getNodeRemark(ast, yaml) {
+ */
+function getNodeRemark(ast: Node, yaml: string) {
   let index = getNodeEndMark(ast).pointer;
   while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== EOL) {
     ++index;
@@ -443,7 +426,10 @@ function getNodeRemark(ast, yaml) {
   if (EOL === yaml[index] || index === yaml.length) {
     return '';
   } else {
-    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+    while (
+      index < yaml.length &&
+      (yaml[index] === '#' || yaml[index] === ' ')
+    ) {
       ++index;
     }
     let end = index;
@@ -456,44 +442,34 @@ function getNodeRemark(ast, yaml) {
 
 /*
  * Sets remark of an AST
- *
- * @param {Node} ast
- * @param {string} remark
- * @param {string} yaml
- *
- * @returns {boolean}
-*/
-function setNodeRemark(ast, remark, yaml) {
+ */
+function setNodeRemark(ast: Node, remark: string, yaml: string) {
   let index = getNodeEndMark(ast).pointer;
   while (index < yaml.length && yaml[index] !== '#' && yaml[index] !== EOL) {
     ++index;
   }
 
   if (EOL === yaml[index] || index === yaml.length) {
-    return yaml.substr(0, index) + ' # ' + remark +
-        yaml.substring(index);
+    return yaml.substr(0, index) + ' # ' + remark + yaml.substring(index);
   } else {
-    while (index < yaml.length && (yaml[index] === '#' || yaml[index] === ' ')) {
+    while (
+      index < yaml.length &&
+      (yaml[index] === '#' || yaml[index] === ' ')
+    ) {
       ++index;
     }
     let end = index;
     while (end < yaml.length && yaml[end] !== EOL) {
       ++end;
     }
-    return yaml.substr(0, index) + remark +
-        yaml.substring(end);
+    return yaml.substr(0, index) + remark + yaml.substring(end);
   }
 }
 
 /*
  * Gets node of an AST which path
- *
- * @param {Node} ast
- * @param {array} path
- *
- * @returns {Node}
-*/
-function getNode(ast, path) {
+ */
+function getNode(ast: Node, path: string | any[]): Node | undefined {
   if (path.length) {
     if (ast.tag === MAP_TAG) {
       let value = ast.value;

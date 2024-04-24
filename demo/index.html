@@ -1,10 +1,6 @@
 <html>
   <head>
     <title>YAWN Demo</title>
-    <script src="../bower_components/js-yaml/dist/js-yaml.js"></script>
-    <script src="../bower_components/yaml-js/yaml.js"></script>
-    <script src="../bower_components/lodash/lodash.js"></script>
-    <script src="../dist/yawn.js"></script>
     <style>
       body {
         display: flex;
@@ -16,7 +12,7 @@
         font-family: sans-serif;
       }
       header {
-        padding: .3em 1em;
+        padding: 0.3em 1em;
         display: flex;
         justify-content: space-between;
       }
@@ -26,7 +22,7 @@
       }
       .wrapper > div {
         padding: 10px;
-        justify-content: center
+        justify-content: center;
       }
       .col {
         display: flex;
@@ -63,7 +59,7 @@
 
       textarea:focus {
         outline: 3px solid rgba(41, 154, 226, 0.5);
-        box-shadow: 0 0 5px #00FFF4;
+        box-shadow: 0 0 5px #00fff4;
       }
       button:focus {
         background-image: url('./arrow-selected.svg');
@@ -76,11 +72,26 @@
     <header>
       <div class="left">
         <h2>YAWN Demo</h2>
-        <p>YAWN allow you edit YAML in JavaScript and put it back to YAML <b>without</b> losing comments and styling</p>
+        <p>
+          YAWN allow you edit YAML in JavaScript and put it back to YAML
+          <b>without</b> losing comments and styling
+        </p>
       </div>
       <div class="right">
-        <p><b><a href="https://github.com/mohsen1/yawn-yaml">Code in GitHub</a></b></p>
-        <iframe src="https://ghbtns.com/github-btn.html?user=mohsen1&repo=yawn-yaml&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
+        <p>
+          <b
+            ><a href="https://github.com/mohsen1/yawn-yaml"
+              >Code in GitHub</a
+            ></b
+          >
+        </p>
+        <iframe
+          src="https://ghbtns.com/github-btn.html?user=mohsen1&repo=yawn-yaml&type=star&count=true&size=large"
+          frameborder="0"
+          scrolling="0"
+          width="160px"
+          height="30px"
+        ></iframe>
       </div>
     </header>
     <div class="wrapper">
@@ -101,8 +112,16 @@
       </div>
     </div>
 
-    <script>
-      'use strict';
+    <script type="importmap">
+      {
+        "imports": {
+          "yawn-yaml": "/dist/yawn-yaml.esm.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import YAWN from '../src';
 
       var defaultYaml = [
         '# this is a YAML document',
@@ -124,7 +143,7 @@
         '  - item1',
         '  - item2',
         '',
-        '# trailing comment'
+        '# trailing comment',
       ].join('\n');
 
       var source = document.getElementById('source');
@@ -135,19 +154,23 @@
 
       var yawn = new YAWN(source.value);
 
-      document.getElementById('toJson').addEventListener('click', function (event) {
-        yawn = new YAWN(source.value);
-        json.value = JSON.stringify(yawn.json, null, 2);
-        dest.value = '';
-      });
-      document.getElementById('toYaml').addEventListener('click', function (event) {
-        try {
-          yawn.json = JSON.parse(json.value);
-        } catch (error) {
-          return alert('Error parsing JSON\n' + String(error));
-        }
-        dest.value = yawn.yaml;
-      });
+      document
+        .getElementById('toJson')
+        .addEventListener('click', function(event) {
+          yawn = new YAWN(source.value);
+          json.value = JSON.stringify(yawn.json, null, 2);
+          dest.value = '';
+        });
+      document
+        .getElementById('toYaml')
+        .addEventListener('click', function(event) {
+          try {
+            yawn.json = JSON.parse(json.value);
+          } catch (error) {
+            return alert('Error parsing JSON\n' + String(error));
+          }
+          dest.value = yawn.yaml;
+        });
     </script>
   </body>
 </html>
