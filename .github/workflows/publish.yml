@@ -1,4 +1,4 @@
-name: Node.js Package
+name: Publish
 on: [push]
 jobs:
   gh-pages:
@@ -23,7 +23,7 @@ jobs:
           publish_dir: .
           publish_branch: gh-pages
   npm-publish:
-    name: npm Publish
+    name: npm
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
