@@ -4,7 +4,6 @@
   "license": "MIT",
   "author": "Mohsen Azimi",
   "typings": "dist/index.d.ts",
-  "source": "demo/index.html",
   "main": "dist/index.js",
   "module": "dist/yawn-yaml.esm.js",
   "files": [
