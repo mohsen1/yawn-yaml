@@ -114,7 +114,9 @@ export default class YAWN {
     // SEQ_TAG
     // -------------------------------------------------------------------------
     if (ast.tag === SEQ_TAG) {
-      this.yaml = updateSeq(ast, newJson, this.yaml, 0);
+      let json = this.json;
+
+      this.yaml = updateSeq(ast, newJson, json, this.yaml, 0);
     }
 
     // Trim trailing whitespaces
@@ -180,12 +182,17 @@ function getTag(json: any) {
 function updateSeq(
   ast: Node,
   newJson: any[],
+  json: any[],
   yaml: string,
   offset: number
 ): string {
   let values: any[] = load(serialize(ast)) as any[];
   let min: number = Math.min(values.length, newJson.length);
   for (let i: number = 0; i < min; i++) {
+    if (isEqual(json[i], newJson[i])) {
+      continue;
+    }
+
     const newYaml: string = changeArrayElement(
       ast.value[i],
       cleanDump(newJson[i]),
@@ -253,7 +260,7 @@ function updateMap(
       // array value has changed
       if (isArray(newValue)) {
         // recurse
-        const newYaml = updateSeq(valNode, newValue, yaml, offset);
+        const newYaml = updateSeq(valNode, newValue, value, yaml, offset);
         offset = offset + newYaml.length - yaml.length;
         yaml = newYaml;
 
