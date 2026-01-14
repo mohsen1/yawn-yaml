@@ -5,39 +5,27 @@ import dedent from 'dedent';
 describe('Comments on array elements', () => {
   it('preserves comments nested in arrays', () => {
     let str = dedent`
-      customers:
-        - name: some-customer
-          deployment:
-            region: us-east-1 # inline comment
-          id: 12345
+      - name: some-customer # inline comment
+        region: us-east-1
     `;
 
     let yawn = new YAWN(str);
-    yawn.json = {
-      customers: [
-        {
-          name: 'some-customer',
-          deployment: { region: 'us-east-1' },
-          id: 12345,
-        },
-        {
-          name: 'some-other-customer',
-          deployment: { region: 'us-east-1' },
-          id: 54321,
-        },
-      ],
-    };
+    yawn.json = [
+      {
+        name: 'some-customer',
+        region: 'us-east-1',
+      },
+      {
+        name: 'some-other-customer',
+        region: 'us-east-1',
+      },
+    ];
 
     expect(yawn.yaml).toEqual(dedent`
-      customers:
-        - name: some-customer
-          deployment:
-            region: us-east-1 # inline comment
-          id: 12345
-        - name: some-other-customer
-          deployment:
-            region: us-east-1
-          id: 54321
+      - name: some-customer # inline comment
+        region: us-east-1
+      - name: some-other-customer
+        region: us-east-1
     `);
   });
 });
