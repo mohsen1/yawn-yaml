@@ -54,6 +54,12 @@
       "limit": "100 KB"
     }
   ],
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/e2e/"
+    ]
+  },
   "devDependencies": {
     "@codemirror/commands": "^6.10.1",
     "@codemirror/lang-json": "^6.0.2",
