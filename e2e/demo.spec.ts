@@ -2,13 +2,23 @@ import { test, expect } from '@playwright/test';
 
 test.describe('YAWN YAML Demo', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/index.html');
-    // Wait for editors to initialize
-    await page.waitForSelector('.cm-editor', { state: 'visible' });
+    // Navigate to the demo page
+    // For local dev server (parcel), it serves at root
+    // For production, baseURL already includes the full path
+    const isProd = process.env.PROD_TEST === '1';
+    await page.goto(isProd ? './index.html' : '/');
+
+    // Wait for page to have basic structure
+    await page.waitForSelector('header h2');
+
+    // Wait for editors to initialize - use longer timeout for production
+    await page.waitForSelector('.cm-editor', { state: 'visible', timeout: 30000 });
+
     // Wait for window.__editors to be available
-    await page.waitForFunction(() => (window as any).__editors !== undefined, { timeout: 10000 });
+    await page.waitForFunction(() => (window as any).__editors !== undefined, { timeout: 15000 });
+
     // Give editors time to fully initialize
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
   });
 
   test('page loads with correct title', async ({ page }) => {

@@ -12,8 +12,10 @@ import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env.CI;
 const isProdTest = !!process.env.PROD_TEST;
+// For local: parcel serves at root, so baseURL is just the origin
+// For prod: the demo is at /yawn-yaml/demo/
 const baseURL = process.env.BASE_URL || (isProdTest
-  ? 'https://azimi.me/yawn-yaml/demo'
+  ? 'https://azimi.me/yawn-yaml/demo/'
   : 'http://localhost:1234');
 
 export default defineConfig({
