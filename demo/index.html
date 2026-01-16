@@ -209,9 +209,10 @@
       import { EditorState } from '@codemirror/state';
       import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
       import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
-      import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+      import { syntaxHighlighting, defaultHighlightStyle, HighlightStyle } from '@codemirror/language';
       import { yaml } from '@codemirror/lang-yaml';
       import { json } from '@codemirror/lang-json';
+      import { tags } from '@lezer/highlight';
 
       const defaultYaml = `# YAWN Demo - YAML with Comments
 # Try editing the YAML or JSON!
@@ -300,9 +301,6 @@ features:
       }, { dark: true });
 
       // Custom syntax highlighting for dark mode
-      import { HighlightStyle } from '@codemirror/language';
-      import { tags } from '@lezer/highlight';
-
       const darkHighlightStyle = HighlightStyle.define([
         { tag: tags.keyword, color: '#ff7b72' },
         { tag: tags.name, color: '#e6edf3' },
