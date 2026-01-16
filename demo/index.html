@@ -1,70 +1,162 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>YAWN Demo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
     <style>
+      * {
+        box-sizing: border-box;
+      }
+      :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f5f5f5;
+        --bg-editor: #fafafa;
+        --text-primary: #1a1a1a;
+        --text-secondary: #666;
+        --border-color: #e0e0e0;
+        --accent: #e94560;
+        --success: #22863a;
+        --error: #cb2431;
+        --status-ok-bg: #dcffe4;
+        --status-ok-text: #22863a;
+        --status-error-bg: #ffeef0;
+        --status-error-text: #cb2431;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-primary: #0d1117;
+          --bg-secondary: #161b22;
+          --bg-editor: #0d1117;
+          --text-primary: #c9d1d9;
+          --text-secondary: #8b949e;
+          --border-color: #30363d;
+          --accent: #f85149;
+          --success: #3fb950;
+          --error: #f85149;
+          --status-ok-bg: #1b4721;
+          --status-ok-text: #3fb950;
+          --status-error-bg: #4a1c1c;
+          --status-error-text: #f85149;
+        }
+      }
       body {
         display: flex;
         flex-direction: column;
-        height: 100%;
+        height: 100vh;
         padding: 0;
         margin: 0;
         overflow: hidden;
-        font-family: sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
       }
       header {
-        padding: 0.3em 1em;
+        padding: 0.5em 1.5em;
         display: flex;
         justify-content: space-between;
+        align-items: center;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+      }
+      header h2 {
+        margin: 0;
+        color: var(--accent);
+        font-size: 1.25em;
+      }
+      header p {
+        margin: 0.3em 0 0 0;
+        font-size: 0.85em;
+        color: var(--text-secondary);
+      }
+      header a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      header a:hover {
+        text-decoration: underline;
       }
       .wrapper {
         display: flex;
         flex: 1;
-      }
-      .wrapper > div {
-        padding: 10px;
-        justify-content: center;
+        overflow: hidden;
       }
       .col {
         display: flex;
-        flex: 5;
-      }
-      .col textarea,
-      .col output {
-        display: block;
-        width: 100%;
-        border: 1px solid #e3e3e3;
-        margin: 0;
-        font-family: monospace;
-        font-size: 14px;
-        white-space: pre;
-        padding: 5px;
-        overflow: auto;
-      }
-      .convert {
-        display: flex;
+        flex-direction: column;
         flex: 1;
+        padding: 10px;
+        min-width: 0;
+        border-right: 1px solid var(--border-color);
+      }
+      .col:last-child {
+        border-right: none;
+      }
+      .col label {
+        font-size: 0.7em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+        display: flex;
         align-items: center;
+        gap: 8px;
+        font-weight: 600;
       }
-      .convert button {
-        background-image: url('./arrow.svg');
-        background-color: transparent;
-        border: none;
-        background-size: cover;
-        background-position: center center;
-        height: 59px;
-        color: white;
-        width: 81px;
-        cursor: pointer;
+      .col label .hint {
+        font-size: 0.95em;
+        color: var(--text-secondary);
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 400;
+        opacity: 0.7;
       }
-
-      textarea:focus {
-        outline: 3px solid rgba(41, 154, 226, 0.5);
-        box-shadow: 0 0 5px #00fff4;
+      .editor-container {
+        flex: 1;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--bg-editor);
       }
-      button:focus {
-        background-image: url('./arrow-selected.svg');
+      .cm-editor {
+        height: 100%;
+      }
+      .cm-editor.cm-focused {
         outline: none;
-        box-shadow: none;
+      }
+      .cm-scroller {
+        font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+      }
+      .status {
+        font-size: 0.7em;
+        padding: 2px 8px;
+        border-radius: 12px;
+        margin-left: auto;
+        font-weight: 500;
+      }
+      .status.ok {
+        background: var(--status-ok-bg);
+        color: var(--status-ok-text);
+      }
+      .status.error {
+        background: var(--status-error-bg);
+        color: var(--status-error-text);
+      }
+      .github {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .readonly-badge {
+        font-size: 0.65em;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--bg-secondary);
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
       }
     </style>
   </head>
@@ -72,105 +164,300 @@
     <header>
       <div class="left">
         <h2>YAWN Demo</h2>
-        <p>
-          YAWN allow you edit YAML in JavaScript and put it back to YAML
-          <b>without</b> losing comments and styling
-        </p>
+        <p>Edit YAML or JSON and see comments preserved in real-time</p>
       </div>
-      <div class="right">
-        <p>
-          <b
-            ><a href="https://github.com/mohsen1/yawn-yaml"
-              >Code in GitHub</a
-            ></b
-          >
-        </p>
+      <div class="github">
+        <a href="https://github.com/mohsen1/yawn-yaml">GitHub</a>
         <iframe
-          src="https://ghbtns.com/github-btn.html?user=mohsen1&repo=yawn-yaml&type=star&count=true&size=large"
+          src="https://ghbtns.com/github-btn.html?user=mohsen1&repo=yawn-yaml&type=star&count=true"
           frameborder="0"
           scrolling="0"
-          width="160px"
-          height="30px"
+          width="100px"
+          height="20px"
         ></iframe>
       </div>
     </header>
     <div class="wrapper">
       <div class="col">
-        <textarea id="source"></textarea>
-      </div>
-      <div class="convert">
-        <button id="toJson">toJSON</button>
-      </div>
-      <div class="col">
-        <textarea id="json"></textarea>
-      </div>
-      <div class="convert">
-        <button id="toYaml">toYAML</button>
+        <label>
+          Source YAML
+          <span class="hint">(edit me)</span>
+          <span id="yamlStatus" class="status ok">valid</span>
+        </label>
+        <div class="editor-container" id="yamlEditor"></div>
       </div>
       <div class="col">
-        <output id="dest"></output>
+        <label>
+          JSON
+          <span class="hint">(edit to modify)</span>
+          <span id="jsonStatus" class="status ok">valid</span>
+        </label>
+        <div class="editor-container" id="jsonEditor"></div>
+      </div>
+      <div class="col">
+        <label>
+          Output YAML
+          <span class="hint">(comments preserved!)</span>
+          <span class="readonly-badge">read-only</span>
+        </label>
+        <div class="editor-container" id="outputEditor"></div>
       </div>
     </div>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "yawn-yaml": "/dist/yawn-yaml.esm.js"
-        }
-      }
-    </script>
-
     <script type="module">
       import YAWN from '../src';
+      import { EditorState } from '@codemirror/state';
+      import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter } from '@codemirror/view';
+      import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+      import { syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
+      import { yaml } from '@codemirror/lang-yaml';
+      import { json } from '@codemirror/lang-json';
 
-      var defaultYaml = [
-        '# this is a YAML document',
-        '# comment lines start with "#"',
-        '# this document is a map',
-        '',
-        '',
-        '# a simple key/value pair',
-        'value: 1 # inline comment',
-        '',
-        '',
-        '# a map',
-        'map:',
-        '  key: value # another inline comment',
-        '',
-        '',
-        '# an array',
-        'array:',
-        '  - item1',
-        '  - item2',
-        '',
-        '# trailing comment',
-      ].join('\n');
+      const defaultYaml = `# YAWN Demo - YAML with Comments
+# Try editing the YAML or JSON!
 
-      var source = document.getElementById('source');
-      var json = document.getElementById('json');
-      var dest = document.getElementById('dest');
+# Application settings
+app:
+  name: "My App" # quoted string preserved
+  version: 1.0
+  debug: true # toggle this
 
-      source.value = defaultYaml;
+# Database configuration
+database:
+  host: localhost # change me
+  port: 5432
+  credentials:
+    user: admin
+    password: secret # don't commit this!
 
-      var yawn = new YAWN(source.value);
+# Feature flags
+features:
+  - dark_mode # everyone loves dark mode
+  - notifications
+  - analytics # opt-in only
 
-      document
-        .getElementById('toJson')
-        .addEventListener('click', function(event) {
-          yawn = new YAWN(source.value);
-          json.value = JSON.stringify(yawn.json, null, 2);
-          dest.value = '';
-        });
-      document
-        .getElementById('toYaml')
-        .addEventListener('click', function(event) {
-          try {
-            yawn.json = JSON.parse(json.value);
-          } catch (error) {
-            return alert('Error parsing JSON\n' + String(error));
-          }
-          dest.value = yawn.yaml;
-        });
+# Try these:
+# 1. Change a value in JSON pane
+# 2. Add a new key in JSON
+# 3. Remove a key from JSON
+# 4. Notice comments stay intact!
+`;
+
+      // Check for dark mode
+      const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      // Light theme
+      const lightTheme = EditorView.theme({
+        '&': {
+          backgroundColor: '#fafafa',
+          color: '#1a1a1a',
+        },
+        '.cm-content': {
+          caretColor: '#1a1a1a',
+        },
+        '.cm-cursor': {
+          borderLeftColor: '#1a1a1a',
+        },
+        '.cm-gutters': {
+          backgroundColor: '#f5f5f5',
+          color: '#999',
+          borderRight: '1px solid #e0e0e0',
+        },
+        '.cm-activeLineGutter': {
+          backgroundColor: '#e8e8e8',
+        },
+        '.cm-activeLine': {
+          backgroundColor: '#f0f0f0',
+        },
+      });
+
+      // Custom dark theme with better contrast
+      const darkTheme = EditorView.theme({
+        '&': {
+          backgroundColor: '#0d1117',
+          color: '#e6edf3',
+        },
+        '.cm-content': {
+          caretColor: '#58a6ff',
+        },
+        '.cm-cursor': {
+          borderLeftColor: '#58a6ff',
+        },
+        '.cm-gutters': {
+          backgroundColor: '#0d1117',
+          color: '#6e7681',
+          borderRight: '1px solid #30363d',
+        },
+        '.cm-activeLineGutter': {
+          backgroundColor: '#161b22',
+        },
+        '.cm-activeLine': {
+          backgroundColor: '#161b22',
+        },
+        '.cm-selectionBackground, ::selection': {
+          backgroundColor: '#264f78 !important',
+        },
+      }, { dark: true });
+
+      // Custom syntax highlighting for dark mode
+      import { HighlightStyle } from '@codemirror/language';
+      import { tags } from '@lezer/highlight';
+
+      const darkHighlightStyle = HighlightStyle.define([
+        { tag: tags.keyword, color: '#ff7b72' },
+        { tag: tags.name, color: '#e6edf3' },
+        { tag: tags.propertyName, color: '#79c0ff' },
+        { tag: tags.variableName, color: '#ffa657' },
+        { tag: tags.string, color: '#a5d6ff' },
+        { tag: tags.number, color: '#79c0ff' },
+        { tag: tags.bool, color: '#ff7b72' },
+        { tag: tags.null, color: '#ff7b72' },
+        { tag: tags.comment, color: '#8b949e', fontStyle: 'italic' },
+        { tag: tags.punctuation, color: '#e6edf3' },
+        { tag: tags.bracket, color: '#e6edf3' },
+        { tag: tags.meta, color: '#79c0ff' },
+        { tag: tags.atom, color: '#79c0ff' },
+        { tag: tags.definition(tags.variableName), color: '#ffa657' },
+        { tag: tags.labelName, color: '#79c0ff' },
+      ]);
+
+      // Base extensions for all editors
+      function getBaseExtensions(lang, readonly = false) {
+        const extensions = [
+          lineNumbers(),
+          highlightActiveLine(),
+          highlightActiveLineGutter(),
+          history(),
+          keymap.of([...defaultKeymap, ...historyKeymap]),
+          lang,
+          EditorView.lineWrapping,
+        ];
+
+        // Apply theme and syntax highlighting based on color scheme
+        if (isDarkMode) {
+          extensions.push(darkTheme);
+          extensions.push(syntaxHighlighting(darkHighlightStyle));
+        } else {
+          extensions.push(lightTheme);
+          extensions.push(syntaxHighlighting(defaultHighlightStyle));
+        }
+
+        if (readonly) {
+          extensions.push(EditorState.readOnly.of(true));
+        }
+
+        return extensions;
+      }
+
+      let yawn = null;
+      let debounceTimer = null;
+      let yamlEditor, jsonEditor, outputEditor;
+
+      const yamlStatus = document.getElementById('yamlStatus');
+      const jsonStatus = document.getElementById('jsonStatus');
+
+      function setStatus(el, status, message) {
+        el.className = 'status ' + status;
+        el.textContent = message;
+      }
+
+      function debounce(fn, delay) {
+        return function(...args) {
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => fn.apply(this, args), delay);
+        };
+      }
+
+      // Update from YAML source
+      function updateFromYaml() {
+        const yamlText = yamlEditor.state.doc.toString();
+        try {
+          yawn = new YAWN(yamlText);
+          const jsonText = JSON.stringify(yawn.json, null, 2);
+
+          // Update JSON editor
+          jsonEditor.dispatch({
+            changes: { from: 0, to: jsonEditor.state.doc.length, insert: jsonText }
+          });
+
+          // Update output editor
+          outputEditor.dispatch({
+            changes: { from: 0, to: outputEditor.state.doc.length, insert: yawn.yaml }
+          });
+
+          setStatus(yamlStatus, 'ok', 'valid');
+          setStatus(jsonStatus, 'ok', 'valid');
+        } catch (e) {
+          setStatus(yamlStatus, 'error', 'parse error');
+          outputEditor.dispatch({
+            changes: { from: 0, to: outputEditor.state.doc.length, insert: '# Error parsing YAML:\n# ' + e.message }
+          });
+        }
+      }
+
+      // Update from JSON
+      function updateFromJson() {
+        if (!yawn) return;
+
+        const jsonText = jsonEditor.state.doc.toString();
+        try {
+          const newJson = JSON.parse(jsonText);
+          setStatus(jsonStatus, 'ok', 'valid');
+
+          yawn.json = newJson;
+          outputEditor.dispatch({
+            changes: { from: 0, to: outputEditor.state.doc.length, insert: yawn.yaml }
+          });
+        } catch (e) {
+          setStatus(jsonStatus, 'error', 'parse error');
+          outputEditor.dispatch({
+            changes: { from: 0, to: outputEditor.state.doc.length, insert: '# Error parsing JSON:\n# ' + e.message }
+          });
+        }
+      }
+
+      // Create editors
+      yamlEditor = new EditorView({
+        state: EditorState.create({
+          doc: defaultYaml,
+          extensions: [
+            ...getBaseExtensions(yaml()),
+            EditorView.updateListener.of(debounce((update) => {
+              if (update.docChanged) updateFromYaml();
+            }, 200)),
+          ],
+        }),
+        parent: document.getElementById('yamlEditor'),
+      });
+
+      jsonEditor = new EditorView({
+        state: EditorState.create({
+          doc: '',
+          extensions: [
+            ...getBaseExtensions(json()),
+            EditorView.updateListener.of(debounce((update) => {
+              if (update.docChanged) updateFromJson();
+            }, 200)),
+          ],
+        }),
+        parent: document.getElementById('jsonEditor'),
+      });
+
+      outputEditor = new EditorView({
+        state: EditorState.create({
+          doc: '',
+          extensions: getBaseExtensions(yaml(), true),
+        }),
+        parent: document.getElementById('outputEditor'),
+      });
+
+      // Initial update
+      updateFromYaml();
+
+      // Listen for color scheme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        window.location.reload();
+      });
     </script>
   </body>
 </html>
