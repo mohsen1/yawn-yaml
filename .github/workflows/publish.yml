@@ -1,45 +1,30 @@
-name: Publish
-on: [push]
+name: Deploy Demo
+on:
+  push:
+    branches:
+      - master
 jobs:
   gh-pages:
     name: GitHub Pages
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/*
-          cache: "yarn"
-      - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: build
-        run: yarn run build
+          node-version: 20
+      - name: Install deps
+        run: yarn install
+      - name: Build
+        run: yarn build
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: ./docs
           publish_branch: gh-pages
-  npm-publish:
-    name: npm
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: lts/*
-          cache: "yarn"
-      - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
-      - name: build
-        run: yarn run build
-      - name: Publish
-        uses: Github-Actions-Community/merge-release@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          destination_dir: docs
 

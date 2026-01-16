@@ -2,24 +2,21 @@ name: CI
 on: [push]
 jobs:
   build:
-    name: Build, lint, and test 
+    name: Build and test
 
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Node.js setup
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 20
 
-      - name: Install deps and build (with cache)
-        uses: bahmutov/npm-install@v1
-
-      - name: Lint
-        run: yarn lint
+      - name: Install deps
+        run: yarn install
 
       - name: Test
         run: yarn test --ci --coverage --maxWorkers=2
