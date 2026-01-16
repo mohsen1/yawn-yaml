@@ -8,7 +8,7 @@ packageJson=$(cat package.json)
 node -e "const fs = require('fs'); const packageJson = JSON.parse(fs.readFileSync('package.json')); delete packageJson.main; delete packageJson.module; fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2));"
 
 mkdir -p docs/demo
-npx parcel build --no-cache --dist-dir=docs/demo demo/index.html
+npx parcel build --no-cache --no-scope-hoist --dist-dir=docs/demo demo/index.html
 
 # Add .nojekyll for GitHub Pages
 touch docs/.nojekyll
