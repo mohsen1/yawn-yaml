@@ -449,6 +449,11 @@ features:
         parent: document.getElementById('outputEditor'),
       });
 
+      // Expose editors and update functions globally for e2e testing
+      window.__editors = { yamlEditor, jsonEditor, outputEditor };
+      window.__updateFromYaml = updateFromYaml;
+      window.__updateFromJson = updateFromJson;
+
       // Initial update
       updateFromYaml();
 

@@ -5,3 +5,14 @@ dist
 package-lock.json
 .parcel-cache
 docs
+
+# Yarn Berry
+.yarn/
+.yarnrc.yml
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

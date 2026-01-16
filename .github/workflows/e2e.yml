@@ -1,0 +1,77 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  # Allow manual trigger
+  workflow_dispatch:
+  # Run daily to catch any production issues
+  schedule:
+    - cron: '0 8 * * *'
+
+jobs:
+  e2e-local:
+    name: E2E Tests (Local)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Node.js setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: yarn install
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests (local)
+        run: npx playwright test
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-local
+          path: test-results/
+          retention-days: 7
+
+  e2e-production:
+    name: E2E Tests (Production)
+    runs-on: ubuntu-latest
+    # Only run against production after deployment
+    needs: e2e-local
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Node.js setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: yarn install
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests (production)
+        run: PROD_TEST=1 npx playwright test
+        env:
+          PROD_TEST: '1'
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-production
+          path: test-results/
+          retention-days: 7
