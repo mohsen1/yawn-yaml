@@ -1,5 +1,46 @@
 # Changelog
 
+## [3.1.0] - 2026-11-14
+
+### Source preserving updates
+
+Assigning `json` now edits the original text in place instead of printing the
+whole document again. Everything that did not change is kept byte for byte:
+indentation, spacing, quoting, flow collections, blank lines, line endings,
+document markers and comments. `yawn.yaml` returns exactly the string that was
+passed in until something changes.
+
+New content follows the style of the document (indentation, indented or
+indentless sequences, padding of flow collections). Every update is checked
+against the assigned value; if an in-place edit is not possible the document
+is updated through the tree as before.
+
+### Bug Fixes
+
+- **#122** - Replacing a scalar sequence item with an object or array threw
+  `Tag not resolved`, and changes between `[]` and `{}` were dropped
+- Setting the root to `null` was ignored when the document was a scalar
+- Removing or adding a sequence item moved comments to the wrong items; items
+  are now matched by value, so comments stay with their item
+- New keys are inserted where they are in the assigned object instead of
+  always at the end
+- An alias no longer changes along with its anchor (or keeps a stale value)
+  unless the assigned value says so
+- `undefined` values were written as `null`; they are skipped like in JSON
+- A tag such as `!!str` kept forcing the old type after the value changed type
+- Reading `yaml` threw for documents with errors (duplicate keys, several
+  documents); such documents can now be read and updated
+- `setRemark()` and `setCommentBefore()` only touch the affected lines
+- `setRemark('items.5', ...)` on a missing index returns `false`
+
+### Other
+
+- New `yawn.errors` lists the syntax errors of the document
+- `YAWNOptions` is exported; `indent` now defaults to the indentation found
+  in the document
+- The changelog of 3.0.0 said `getRemark()` and `setRemark()` were removed.
+  They were not, and they are still supported.
+
 ## [3.0.0] - 2026-01-16
 
 ### Breaking Changes
