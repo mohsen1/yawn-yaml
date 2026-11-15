@@ -371,6 +371,7 @@ features:
         const yamlText = yamlEditor.state.doc.toString();
         try {
           yawn = new YAWN(yamlText);
+          if (yawn.errors.length) throw new Error(yawn.errors[0]);
           const jsonText = JSON.stringify(yawn.json, null, 2);
 
           // Update JSON editor

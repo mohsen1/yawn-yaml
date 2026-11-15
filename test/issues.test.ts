@@ -450,4 +450,60 @@ describe('Additional Edge Cases', () => {
       expect(yawn.json.temperature).toBe(-10);
     });
   });
+  describe('Issue #122: scalar to collection in sequences, [] <-> {}', () => {
+    it('replaces a scalar sequence item with an object', () => {
+      const yawn = new YAWN('items:\n  - 0\n');
+      yawn.json = { items: [{ x: 1 }] };
+      expect(yawn.yaml).toBe('items:\n  - x: 1\n');
+      expect(yawn.json).toEqual({ items: [{ x: 1 }] });
+    });
+
+    it('replaces a scalar sequence item with an array', () => {
+      const yawn = new YAWN('items:\n  - 0\n');
+      yawn.json = { items: [[]] };
+      expect(yawn.yaml).toBe('items:\n  - []\n');
+      expect(yawn.json).toEqual({ items: [[]] });
+    });
+
+    it('replaces a scalar sequence item with a non-empty array', () => {
+      const yawn = new YAWN('items:\n  - 0 # zero\n  - 1\n');
+      yawn.json = { items: [[1, 2], 1] };
+      expect(yawn.json).toEqual({ items: [[1, 2], 1] });
+      expect(yawn.yaml).toContain('# zero');
+    });
+
+    it('turns an empty array into an empty object', () => {
+      const yawn = new YAWN('b: []\n');
+      yawn.json = { b: {} };
+      expect(yawn.yaml).toBe('b: {}\n');
+      expect(yawn.json).toEqual({ b: {} });
+    });
+
+    it('turns an empty object into an empty array', () => {
+      const yawn = new YAWN('k: {}\n');
+      yawn.json = { k: [] };
+      expect(yawn.yaml).toBe('k: []\n');
+      expect(yawn.json).toEqual({ k: [] });
+    });
+
+    it('tells an array from an object with the same indices', () => {
+      const yawn = new YAWN('a:\n  - 1\n');
+      yawn.json = { a: { '0': 1 } };
+      expect(yawn.json).toEqual({ a: { '0': 1 } });
+      expect(Array.isArray(yawn.json.a)).toBe(false);
+
+      yawn.json = { a: [1] };
+      expect(yawn.json).toEqual({ a: [1] });
+    });
+
+    it('handles the same changes at the root and in flow collections', () => {
+      let yawn = new YAWN('[]\n');
+      yawn.json = {};
+      expect(yawn.yaml).toBe('{}\n');
+
+      yawn = new YAWN('a: [0, 1]\n');
+      yawn.json = { a: [{ x: 1 }, []] };
+      expect(yawn.json).toEqual({ a: [{ x: 1 }, []] });
+    });
+  });
 });
